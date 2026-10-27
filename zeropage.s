@@ -16,24 +16,24 @@ GOGIVEAYF:
 .org ZP_START2
 Z15:
 	.res 1
-.ifndef POSX; allow override
+.ifndef POSX	; allow override
 POSX:
 .endif
 	.res 1
-.ifndef Z17; allow override
+.ifndef Z17		; allow override
 Z17:
 .endif
 	.res 1
-.ifndef Z18; allow override
+.ifndef Z18		; allow override
 Z18:
 .endif
 	.res 1
 LINNUM:
-.ifndef TXPSV; allow override
+.ifndef TXPSV	; allow override
 TXPSV:
 .endif
 	.res 2
-.ifndef INPUTBUFFER; allow override
+.ifndef INPUTBUFFER	; allow override - for simple6502 we move this to $200 C64 style
 INPUTBUFFER:
 .endif
 

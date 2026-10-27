@@ -28,6 +28,9 @@ SYM1 := 1
 .elseif .def(w65c816sxb)
 W65C816SXB := 1
 .include "defines_w65c816sxb.s"
+.elseif .def(simple6502)
+SIMPLE6502 := 1
+.include "defines_simple6502.s"
 .endif
 
 .ifdef CONFIG_2C
