@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `token.s`, `error.s` and `message.s`: removed `.ifdef`s for other targets. `CONFIG_NULL` is
+  kept on purpose. `ERR_BADDATA` is commented out (needs `CONFIG_FILE`).
+- `misc3.s` removed (KBD only); `msbasic.s` no longer includes it.
 - `header.s` now has the entry points: `jmp COLD_START` at $DC00 and
   `jmp RESTART` (warm start) at $DC03. The `.ifdef`s were removed.
 - `iscntc.s` holds the Ctrl-C check directly; `simple6502_iscntc.s` and

@@ -3,10 +3,12 @@
 .setcpu "6502"
 .macpack longbranch
 
+; Definitions, constants and macros
 .include "defines_simple6502.s"
 .include "macros.s"
 .include "zeropage.s"
 
+; The code block
 .include "header.s"
 .include "token.s"
 .include "error.s"
@@ -24,7 +26,6 @@
 .include "array.s"
 .include "misc2.s"
 .include "string.s"
-.include "misc3.s"
 .include "poke.s"
 .include "float.s"
 .include "chrget.s"

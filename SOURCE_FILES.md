@@ -29,7 +29,6 @@ Descriptions are inferred from a quick scan of each file.
 | flow2.s | `RUN`, `GOSUB`/`RETURN`, `GOTO`, `DATA`, `IF`, `REM`, `ON`. |
 | misc1.s | Line number parsing (`LINGET`), `LET` and string assignment. |
 | misc2.s | `FRE`, `POS`, `DEF FN` and integer-to-float helpers. |
-| misc3.s | KBD-only patches. Wrapped in `.ifdef KBD`, so it assembles to nothing here. |
 | chrget.s | `CHRGET` and `CHRGOT` text scanner (copied to zero page at startup). |
 | init.s | Cold start: memory sizing, banner and zero page setup. |
 
