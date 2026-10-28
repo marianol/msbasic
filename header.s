@@ -1,4 +1,8 @@
-		.segment "BASHEADER"
+.ifdef SIMPLE6502
+		.segment "BASHEADER"	; avoid clash with BIOS HEADER segment
+.else
+		.segment "HEADER"
+.endif
 .ifdef W65C816SXB
 ; Disable emulation mode (is left on from the monitor)
 .setcpu "65816"
