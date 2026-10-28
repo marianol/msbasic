@@ -9,9 +9,8 @@ Descriptions are inferred from a quick scan of each file.
 
 | File | What it does |
 | ---- | ------------ |
-| msbasic.s | Main file. Includes all the others in link order. |
-| defines.s | Selects the target, derives the `CONFIG_*` levels, `INPUTBUFFER` flags and common constants. |
-| defines_simple6502.s | Simple6502 settings: `CONFIG_*` flags, zero page layout, `INPUTBUFFER`, `MONCOUT`. |
+| msbasic.s | Main file. Includes `defines_simple6502.s` and all the others in link order. |
+| defines_simple6502.s | All target definitions: `CONFIG_*` flags, zero page layout, `INPUTBUFFER`, floating point sizes, `CR`/`LF`, `MONCOUT`. Includes `bios_jumptable.inc`. |
 | bios_jumptable.inc | Copy of the Simple6502 BIOS jump table (`BIOS_*` addresses). |
 | macros.s | Macros for tokens, keyword tables, error messages and high-bit strings. |
 | zeropage.s | Zero page variable layout. |
@@ -67,3 +66,5 @@ Descriptions are inferred from a quick scan of each file.
 | ---- | ------------ |
 | simple6502.cfg | ld65 linker config and memory map. |
 | make_simple6502.sh | Assembles and links the Simple6502 target into `out/`. |
+| compare_simple6502.sh | Builds the target and compares it byte by byte with `ref/simple6502_ref.bin`. |
+| ref/simple6502_ref.bin | Reference binary, built before the cleanup (commit `d939b4f`). |

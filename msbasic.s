@@ -3,7 +3,7 @@
 .setcpu "6502"
 .macpack longbranch
 
-.include "defines.s"
+.include "defines_simple6502.s"
 .include "macros.s"
 .include "zeropage.s"
 

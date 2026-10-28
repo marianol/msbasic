@@ -2,6 +2,7 @@
 ## Simple6502 Build ToDo's
 
 - [x] Figure out what each source in SOURCE_FILES.md does.
+- [x] Create a reference binary and a script that can compile and check against it as I am cleaning up in the source
 - [ ] see opportunities for file consolidation
 - [ ] clean up souces for .ifdef(s) that refer to other architectures.
 

@@ -18,8 +18,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   description of each.
 - This changelog.
 
+- `compare_simple6502.sh`: builds simple6502 and compares it byte by byte with
+  `ref/simple6502_ref.bin`, the binary built before the cleanup.
+
 ### Changed
 
+- `defines.s` merged into `defines_simple6502.s`; `msbasic.s` includes it
+  directly. Unused defines removed (`CURDVC`, `TISTR`, `Z96`).
 - `TODO.txt` renamed to `TODO.md`.
 - README rewritten for the Simple6502-only branch.
 
