@@ -1,17 +1,8 @@
 .segment "CODE"
 
-.ifdef APPLE
-.include "apple_loadsave.s"
-.endif
-.ifdef KIM
-.include "kim_loadsave.s"
-.endif
-.ifdef MICROTAN
-.include "microtan_loadsave.s"
-.endif
-.ifdef AIM65
-.include "aim65_loadsave.s"
-.endif
-.ifdef SYM1
-.include "sym1_loadsave.s"
-.endif
+; LOAD and SAVE stubs. The BIOS has no load/save routine yet (only the
+; monitor's Intel HEX L and S commands).
+; @todo hook these up once the BIOS provides them.
+SAVE:
+LOAD:
+        rts
