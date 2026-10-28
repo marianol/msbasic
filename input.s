@@ -253,7 +253,7 @@ PROCESS_INPUT_ITEM:
         bvc     L2AF0
   .ifdef MICROTAN
         jsr     MONRDKEY2
-  .elseif .def(AIM65)
+  .elseif .def(AIM65) || .def(SIMPLE6502)
         jsr     MONRDKEY2
   .else
         jsr     MONRDKEY

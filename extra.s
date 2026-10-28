@@ -31,3 +31,6 @@
 .ifdef W65C816SXB
 .include "w65c816sxb_extra.s"
 .endif
+.ifdef SIMPLE6502
+.include "simple6502_extra.s"
+.endif

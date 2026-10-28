@@ -93,9 +93,7 @@ LE878:
 
 .ifndef KBD
 L29B9:
-  .if .def(CBM2) || .def(SIMPLE6502)    ; original .ifdef CBM2 
-                                        ; added mine since I was getting compile error
-                                        ; print.s(104): Error: Illegal addressing mode
+  .if .def(CBM2) || .def(SIMPLE6502)    ; non-ZP INPUTBUFFER: sty abs,x does not exist
         lda     #$00
         sta     INPUTBUFFER,x
         ldx     #<(INPUTBUFFER-1)

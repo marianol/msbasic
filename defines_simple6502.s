@@ -43,21 +43,10 @@ ENTROPY = $E844             ; for RND seed, pulls 8 bits of the count value for 
                             ; by basic for generating pseudorandom numbers.
                             ; @todo we need to change that to our timer
 
-; monitor functions
-; need to change this to labels when I move this to the BIOS project
+; BIOS entry points (BIOS_* labels from the BIOS jump table)
+.include "bios_jumptable.inc"
 
-; OPEN	:= $FFC0
-; CLOSE	:= $FFC3
-; CHKIN	:= $FFC6
-; CHKOUT	:= $FFC9
-; CLRCH	:= $FFCC
-; CHRIN	:= $FFCF
-LOAD	:= $FFD5    ; I have the Intel Hex now need to check if it works like the C=
-SAVE	:= $FFD8    ; I have the Intel Hex now need to check if it works like the C=
-; VERIFY	:= $FFDB
-; SYS		:= $FFDE
-ISCNTC	:= $FFE1    ; used Is Control C, do not have this what does it do?
-; CLALL	:= $FFE7
-; LE7F3	:= $E7F3    ; for CBM1
-MONCOUT	:= $8006    ; Character out routine BIOS_SERIAL_OUT for us
-MONRDKEY := $8009   ; Character in routine BIOS_SERIAL_IN for us 
+; monitor functions
+MONCOUT	:= BIOS_SERIAL_OUT  ; character out, preserves A, X and Y
+; MONRDKEY, MONRDKEY2, LOAD and SAVE are in simple6502_extra.s
+; ISCNTC is in simple6502_iscntc.s

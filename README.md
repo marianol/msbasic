@@ -63,38 +63,15 @@ or work correctly.
 
 ## Simple6502 Port
 
-This fork adds a build target for [Simple6502](https://github.com/marianol/simple6502), a homebrew 6502 single board computer with a serial terminal. It is based on the Commodore BASIC 2 configuration (CONFIG_2A, `INPUTBUFFER` at $0200).
+This fork adds a target for [Simple6502](https://github.com/marianol/simple6502), a homebrew 6502 SBC with a serial terminal. It is based on the CBM2 configuration (CONFIG_2A, `INPUTBUFFER` at $0200).
 
-To build it, run `./make_simple6502.sh`. The output goes to `out/` (`simple6502.bin` and `simple6502.lbl`). `./make.sh` now writes the original targets to `out-orig/`. Both directories are ignored by git.
+Build with `./make_simple6502.sh` (output in `out/`). `./make.sh` now writes the original targets to `out-orig/`.
 
-What was added or changed:
-
-| File                  | Change
-| --------------------- | --------------------------------------------------------------------------------
-| defines_simple6502.s  | Target configuration: CONFIG_* flags, zero page layout, `INPUTBUFFER`, and the BIOS entry points (`MONCOUT`, `MONRDKEY`, `LOAD`, `SAVE`, `ISCNTC`)
-| defines.s             | Selects the new target when `simple6502` is defined
-| simple6502.cfg        | Linker memory map, see below
-| header.s              | Uses the `BASHEADER` segment instead of `HEADER` when building for Simple6502, so it does not clash with the BIOS `HEADER` segment. Other targets are unchanged.
-| print.s               | The `INPUTBUFFER` setup in `L29B9` takes the same path as CBM2 for Simple6502. The default path uses `sty abs,x`, which does not exist on the 6502 and only works when `INPUTBUFFER` is in zero page.
-| zeropage.s            | Comments only
-| make_simple6502.sh    | Assembles and links the Simple6502 target
-
-`CONFIG_CBM_ALL` and `CONFIG_FILE` are not enabled, so the Commodore-specific additions and file I/O are left out. `CONFIG_NO_CR` is enabled because the serial terminal does its own line wrapping.
-
-### Memory map
-
-`simple6502.cfg` places BASIC in its own `BASROM` region so it can be merged with the BIOS project. The BIOS, monitor and reset vector segments are also declared (all `optional`), and the BIOS and reset vector entries are meant to be removed once the BIOS project provides them.
-
-| Region     | Start | Size  | Contents
-| ---------- |:-----:|:-----:| ---------------------------------------------------
-| ZP         | $0000 | $0100 | Zero page
-| STACK      | $0100 | $0100 | Stack
-| RAM        | $0200 | $7D00 | RAM, includes `INPUTBUFFER` at $0200
-| IO         | $7F00 | $0100 | I/O
-| ROM        | $8000 | $5C00 | BIOS (`HEADER`, `BIOS`)
-| BASROM     | $DC00 | $2400 | BASIC (`BASHEADER`, `VECTORS`, `KEYWORDS`, `ERROR`, `CODE`, `CHRGET`, `INIT`, `EXTRA`)
-| MONITOR    | $FF00 | $00FA | `WOZMON`
-| RSTVECTORS | $FFFA | $0006 | `RESETVECTORS`
+* `defines_simple6502.s`: target configuration. It includes `bios_jumptable.inc`, a copy of the BIOS jump table (BIOS v0.6.1 or later, needs `BIOS_SERIAL_POLL`).
+* `simple6502_extra.s`: `MONRDKEY` (blocking, echoes), `MONRDKEY2` (non-blocking, used by GET) and LOAD/SAVE stubs.
+* `simple6502_iscntc.s`: Ctrl-C check.
+* `simple6502.cfg`: linker config. BASIC is in its own `BASROM` region ($DC00) so it can be merged with the BIOS, which uses the `HEADER`, `BIOS`, `WOZMON` and `RESETVECTORS` segments. Because of this, `header.s` uses a `BASHEADER` segment for this target only.
+* `print.s`: the CBM2 `INPUTBUFFER` setup is also used for this target.
 
 ## More Information
 
