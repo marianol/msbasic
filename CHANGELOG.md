@@ -30,7 +30,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `jmp RESTART` (warm start) at $DC03. The `.ifdef`s were removed.
 - `iscntc.s` holds the Ctrl-C check directly; `simple6502_iscntc.s` and
   `cbm_iscntc.s` removed.
-- Reference binary rebuilt: the entry jumps add 6 bytes at the start of BASIC.
+- Reference binary rebuilt for the entry jumps (6 bytes at the start of BASIC)
+  and for the backspace fix.
 - `defines.s` merged into `defines_simple6502.s`; `msbasic.s` includes it
   directly. Unused defines removed (`CURDVC`, `TISTR`, `Z96`).
 - `TODO.txt` renamed to `TODO.md`.
@@ -38,6 +39,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Backspace ($08) and DEL ($7F) are handled in `MONRDKEY`: the last character
+  is removed from the line buffer and erased on the terminal. `inline.s` is
+  unchanged. Tested in the emulator, together with Ctrl-C.
 - README typos.
 
 ## [0.1.0]
