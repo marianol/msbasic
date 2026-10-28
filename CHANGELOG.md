@@ -14,8 +14,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- `SOURCE_FILES.txt`: files the simple6502 build reads.
+- `SOURCE_FILES.md`: files the simple6502 build reads, with a short
+  description of each.
 - This changelog.
+
+### Changed
+
+- `TODO.txt` renamed to `TODO.md`.
+- README rewritten for the Simple6502-only branch.
 
 ### Fixed
 
