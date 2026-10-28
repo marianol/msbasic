@@ -23,6 +23,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `header.s` now has the entry points: `jmp COLD_START` at $DC00 and
+  `jmp RESTART` (warm start) at $DC03. The `.ifdef`s were removed.
+- `iscntc.s` holds the Ctrl-C check directly; `simple6502_iscntc.s` and
+  `cbm_iscntc.s` removed.
+- Reference binary rebuilt: the entry jumps add 6 bytes at the start of BASIC.
 - `defines.s` merged into `defines_simple6502.s`; `msbasic.s` includes it
   directly. Unused defines removed (`CURDVC`, `TISTR`, `Z96`).
 - `TODO.txt` renamed to `TODO.md`.

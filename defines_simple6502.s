@@ -56,8 +56,6 @@ ENTROPY = $E844             ; for RND seed, pulls 8 bits of the count value for 
 ; monitor functions
 MONCOUT	:= BIOS_SERIAL_OUT  ; character out, preserves A, X and Y
 ; MONRDKEY, MONRDKEY2, LOAD and SAVE are in simple6502_extra.s
-; ISCNTC is in simple6502_iscntc.s
-
 
 ; Floating point parameters - @todo check if true
 BYTES_FP		    := 5

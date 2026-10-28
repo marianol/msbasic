@@ -1,37 +1,8 @@
-.ifdef SIMPLE6502
-		.segment "BASHEADER"	; avoid clash with BIOS HEADER segment
-.else
-		.segment "HEADER"
-.endif
-.ifdef W65C816SXB
-; Disable emulation mode (is left on from the monitor)
-.setcpu "65816"
-        SEC ;set carry for emulation mode
-        XCE ;go into emulation mode
-.setcpu "65C02"
-        jsr INITUSBSERIAL
+.segment "BASHEADER"	; avoid clash with BIOS HEADER segment
 
-        ; Add a small delay to allow monitor to connect the terminal after
-        ; starting execution
-        ldy #0
-        ldx #0
-@loop:
-        dex
-        bne @loop
-        dey
-        bne @loop
-        jmp COLD_START
-.endif
+; Startup Vectors at the top of Basic ROM
+; for the SIMPLE6502 this will be $DC00
 
-.ifdef KBD
-        jmp     LE68C
-        .byte   $00,$13,$56
-.endif
-.ifdef AIM65
-        jmp     COLD_START
-        jmp     RESTART
-        .word   AYINT,GIVAYF
-.endif
-.ifdef SYM1
-        jmp     PR_WRITTEN_BY
-.endif
+jmp     COLD_START      ; $DC00 cold start
+jmp     RESTART         ; $DC03 warm start
+

@@ -14,7 +14,7 @@ Descriptions are inferred from a quick scan of each file.
 | bios_jumptable.inc | Copy of the Simple6502 BIOS jump table (`BIOS_*` addresses). |
 | macros.s | Macros for tokens, keyword tables, error messages and high-bit strings. |
 | zeropage.s | Zero page variable layout. |
-| header.s | Switches to the `BASHEADER` segment. The startup code in it is for other targets, so it emits nothing here. |
+| header.s | Entry points at the start of BASIC ROM: `jmp COLD_START` at $DC00 and `jmp RESTART` (warm start) at $DC03. |
 
 ## Interpreter core
 
@@ -53,9 +53,7 @@ Descriptions are inferred from a quick scan of each file.
 | print.s | `PRINT`, `TAB`, `SPC`, number and string output, character out (`OUTDO`). |
 | input.s | `INPUT`, `READ`, `GET` and input conversion errors. |
 | inline.s | Line input (`INLIN`) from the console. |
-| iscntc.s | Selects the Ctrl-C check for the target. |
-| cbm_iscntc.s | Comment only: on Commodore targets `ISCNTC` is a KERNAL call. |
-| simple6502_iscntc.s | Ctrl-C check using `BIOS_SERIAL_POLL`. Falls into `STOP`. |
+| iscntc.s | Ctrl-C check using `BIOS_SERIAL_POLL`. Any other key is discarded. Falls into `STOP`. |
 | extra.s | Selects the target's extra code (`EXTRA` segment). |
 | simple6502_extra.s | `MONRDKEY` (blocking, echoes), `MONRDKEY2` (non-blocking, for GET) and LOAD/SAVE stubs. |
 | loadsave.s | Selects the target's LOAD/SAVE code. Nothing is included for Simple6502. |
@@ -67,4 +65,4 @@ Descriptions are inferred from a quick scan of each file.
 | simple6502.cfg | ld65 linker config and memory map. |
 | make_simple6502.sh | Assembles and links the Simple6502 target into `out/`. |
 | compare_simple6502.sh | Builds the target and compares it byte by byte with `ref/simple6502_ref.bin`. |
-| ref/simple6502_ref.bin | Reference binary, built before the cleanup (commit `d939b4f`). |
+| ref/simple6502_ref.bin | Reference binary. Rebuilt after adding the entry jumps in `header.s`. |

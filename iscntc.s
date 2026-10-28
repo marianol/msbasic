@@ -2,34 +2,15 @@
 ; ----------------------------------------------------------------------------
 ; SEE IF CONTROL-C TYPED
 ; ----------------------------------------------------------------------------
-.ifndef CONFIG_CBM_ALL
-.include "cbm_iscntc.s"
-.endif
-.ifdef KBD
-.include "kbd_iscntc.s"
-.endif
-.ifdef OSI
-.include "osi_iscntc.s"
-.endif
-.ifdef APPLE
-.include "apple_iscntc.s"
-.endif
-.ifdef KIM
-.include "kim_iscntc.s"
-.endif
-.ifdef MICROTAN
-.include "microtan_iscntc.s"
-.endif
-.ifdef AIM65
-.include "aim65_iscntc.s"
-.endif
-.ifdef SYM1
-.include "sym1_iscntc.s"
-.endif
-.ifdef W65C816SXB
-.include "w65c816sxb_iscntc.s"
-.endif
-.ifdef SIMPLE6502
-.include "simple6502_iscntc.s"
-.endif
+; Simple6502 Implementation
+; Checks the serial port for a Control-C (called between BASIC statements).
+; Any other character received is discarded.
+ISCNTC:
+        jsr     BIOS_SERIAL_POLL
+        bcc     @NOTHING        ; no byte received
+        cmp     #$03            ; Control-C?
+        beq     @STOPIT
+@NOTHING:
+        rts
+@STOPIT:
 ;!!! runs into "STOP"
