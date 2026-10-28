@@ -1,6 +1,6 @@
 # Microsoft BASIC for 6502
 
-This is based on the https://github.com/mist64/msbasic project. This branch is intended to clean up the source so it will only compile for my Simple 6502 SBC. With the idea of merginf this with the existing BIOS and be able to maintain this easier. 
+This is based on the https://github.com/mist64/msbasic project. This branch is intended to clean up the source so it will only compile for my Simple 6502 SBC. The idea is to merge it with the existing BIOS and make it easier to maintain.
 
 
 ## Simple6502 Port
@@ -19,7 +19,7 @@ Build with `./make_simple6502.sh` (output in `out/`). `./make.sh` now writes the
 
 More information on the differences of the respective versions can be found on this blog entry: [Create your own Version of Microsoft BASIC for 6502](http://www.pagetable.com/?p=46).
 
-Also, Ben Eater has an published excellent video demonstrating how to port BASIC to a new system: [Running MSBASIC on my breadboard 6502 computer
+Also, Ben Eater has published an excellent video demonstrating how to port BASIC to a new system: [Running MSBASIC on my breadboard 6502 computer
 ](https://www.youtube.com/watch?v=XlbPnihCM0E)
 
 ## License
@@ -28,7 +28,7 @@ Also, Ben Eater has an published excellent video demonstrating how to port BASIC
 
 ## Credits
 
-* MicroSoft for releasing [msbasic for 6502](https://github.com/microsoft/BASIC-M6502) code for us to tinker under MIT License 
+* MicroSoft for releasing [msbasic for 6502](https://github.com/microsoft/BASIC-M6502) code for us to tinker under MIT License
 * [Main work](https://github.com/mist64/msbasic) by Michael Steil <mist64@mac.com>.
 * AIM-65 and SYM-1 by Martin Hoffmann-Vetter
 * Function names and all uppercase comments taken from Bob Sander-Cederlof's excellent [AppleSoft II disassembly](http://www.txbobsc.com/scsc/scdocumentor/).
