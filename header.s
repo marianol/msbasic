@@ -1,4 +1,4 @@
-		.segment "HEADER"
+		.segment "BASHEADER"
 .ifdef W65C816SXB
 ; Disable emulation mode (is left on from the monitor)
 .setcpu "65816"
