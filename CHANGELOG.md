@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- `token.s`, `error.s`, `message.s`, `program.s` and `flow1.s`: removed `.ifdef`s for other targets. `CONFIG_NULL` is
+- `token.s`, `error.s`, `message.s`, `program.s`, `flow1.s`, `flow2.s` and `misc1.s`: removed `.ifdef`s for other targets. `CONFIG_NULL` is
   kept on purpose. `ERR_BADDATA` is commented out (needs `CONFIG_FILE`).
 - LOAD/SAVE stubs moved from `simple6502_extra.s` to `loadsave.s`.
 - `misc3.s` removed (KBD only); `msbasic.s` no longer includes it.

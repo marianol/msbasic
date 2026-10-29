@@ -60,10 +60,8 @@ LET:
         sty     FORPNT+1
         lda     #TOKEN_EQUAL
         jsr     SYNCHR
-.ifndef CONFIG_SMALL
         lda     VALTYP+1
         pha
-.endif
         lda     VALTYP
         pha
         jsr     FRMEVL
@@ -71,7 +69,6 @@ LET:
         rol     a
         jsr     CHKVAL
         bne     LETSTRING
-.ifndef CONFIG_SMALL
         pla
 LET2:
         bpl     L2923
@@ -85,79 +82,18 @@ LET2:
         sta     (FORPNT),y
         rts
 L2923:
-.endif
 
 ; ----------------------------------------------------------------------------
 ; REAL VARIABLE = EXPRESSION
 ; ----------------------------------------------------------------------------
         jmp     SETFOR
 LETSTRING:
-.ifndef CONFIG_SMALL
         pla
-.endif
 
 ; ----------------------------------------------------------------------------
 ; INSTALL STRING, DESCRIPTOR ADDRESS IS AT FAC+3,4
 ; ----------------------------------------------------------------------------
 PUTSTR:
-.ifdef CONFIG_CBM_ALL
-        ldy     FORPNT+1
-  .ifdef CBM1
-        cpy     #$D0	; TI$
-  .else
-        cpy     #$DE
-  .endif
-        bne     LC92B
-        jsr     FREFAC
-        cmp     #$06
-  .ifdef CBM2
-        bne     IQERR1
-  .else
-        jne     IQERR
-  .endif
-        ldy     #$00
-        sty     FAC
-        sty     FACSIGN
-LC8E8:
-        sty     STRNG2
-        jsr     LC91C
-        jsr     MUL10
-        inc     STRNG2
-        ldy     STRNG2
-        jsr     LC91C
-        jsr     COPY_FAC_TO_ARG_ROUNDED
-        tax
-        beq     LC902
-        inx
-        txa
-        jsr     LD9BF
-LC902:
-        ldy     STRNG2
-        iny
-        cpy     #$06
-        bne     LC8E8
-        jsr     MUL10
-        jsr     QINT
-        ldx     #$02
-        sei
-LC912:
-        lda     FAC+2,x
-        sta     TISTR,x
-        dex
-        bpl     LC912
-        cli
-        rts
-LC91C:
-        lda     (INDEX),y
-        jsr     CHRGOT2
-        bcc     LC926
-IQERR1:
-        jmp     IQERR
-LC926:
-        sbc     #$2F
-        jmp     ADDACC
-LC92B:
-.endif
         ldy     #$02
         lda     (FAC_LAST-1),y
         cmp     FRETOP+1
@@ -205,29 +141,3 @@ L2963:
         sta     (FORPNT),y
 RET5:
         rts
-.ifdef AIM65
-LB89D:
-        cmp     #$21
-        bne     RET5
-        lda     #$80
-        sta     PRIFLG
-        jmp     CHRGET
-.endif
-
-.ifdef CONFIG_FILE
-PRINTH:
-        jsr     CMD
-        jmp     LCAD6
-CMD:
-        jsr     GETBYT
-        beq     LC98F
-        lda     #$2C
-        jsr     SYNCHR
-LC98F:
-        php
-        jsr     CHKOUT
-        stx     CURDVC
-        plp
-        jmp     PRINT
-.endif
-
