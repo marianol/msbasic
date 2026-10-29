@@ -23,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Easter egg (`WAIT 6502,n`) in `float.s` now sends "MICROSOFT!" to the serial
+  terminal instead of writing to PET screen memory at $8000 (the BIOS ROM here).
+  The original code is kept as comments. Tested on the emulator. Reference
+  rebuilt.
 - Zero page: `POSX` and `TXPSV` overrides removed. `POSX` is now at $5B and no
   longer overlaps `STRNG2`; `TXPSV` shares `LINNUM`. Override `.ifdef`s removed
   from `zeropage.s`. Added `ZEROPAGE_MAP.md`. Reference rebuilt.

@@ -29,35 +29,70 @@ FSUBT:
         jmp     FADDT
 
 ; ----------------------------------------------------------------------------
-; Commodore BASIC V2 Easter Egg
+; Commodore BASIC V2 Easter Egg: WAIT 6502,n
+;
+; Called from WAIT (poke.s) when the statement has only two arguments,
+; "WAIT address,mask", and no third (xor) argument.
+; On entry LINNUM = address, FORPNT = mask (the second argument).
+;
+; If the address is not 6502 this jumps back into the normal WAIT code (L3628).
+; If it is 6502, it sends the word "MICROSOFT!" to the serial terminal n times
+; (n = the mask, 0 means 256). Each repeat is 10 characters.
+;
+; The original code is kept below, commented out. It wrote the text straight
+; into the PET screen memory at $8000, which on the Simple6502 is the BIOS ROM.
 ; ----------------------------------------------------------------------------
 .ifdef CONFIG_EASTER_EGG
 EASTER_EGG:
-        lda     LINNUM
-        cmp     #<6502
-        bne     L3628
-        lda     LINNUM+1
-        sbc     #>6502
-        bne     L3628
-        sta     LINNUM
-        tay
-        lda     #$80
-        sta     LINNUM+1
-LD758:
-        ldx     #$0A
+        lda     LINNUM                  ; address low byte
+        cmp     #<6502                  ; is the address 6502?
+        bne     L3628                   ; no, do a normal WAIT
+        lda     LINNUM+1                ; address high byte
+        sbc     #>6502                  ; (carry is set by the equal compare above)
+        bne     L3628                   ; no, do a normal WAIT
+LD758:                                  ; one repeat of the text per pass
+        ldx     #$0A                    ; 10 characters
 LD75A:
-        lda     MICROSOFT-1,x
-        and     #$3F
-        sta     (LINNUM),y
-        iny
-        bne     LD766
-        inc     LINNUM+1
-LD766:
+        lda     MICROSOFT-1,x           ; text table is stored backwards, last char first
+        and     #$3F                    ; PET character code -> screen code
+        cmp     #$20                    ; screen codes $00-$1F are the letters (@, A-Z)
+        bcs     @send                   ; $20-$3F (space, digits, '!') are already ASCII
+        ora     #$40                    ; $00-$1F -> $40-$5F, the ASCII letters
+@send:
+        jsr     MONCOUT                 ; send to the serial terminal (keeps A, X and Y)
         dex
-        bne     LD75A
-        dec     FORPNT
-        bne     LD758
+        bne     LD75A                   ; next character
+        dec     FORPNT                  ; repeat count (the mask)
+        bne     LD758                   ; send the text again
         rts
+
+; Original Commodore code, writes to the PET screen memory. Not used here.
+;EASTER_EGG:
+;        lda     LINNUM
+;        cmp     #<6502
+;        bne     L3628
+;        lda     LINNUM+1
+;        sbc     #>6502
+;        bne     L3628
+;        sta     LINNUM                  ; A = 0: pointer low = $00
+;        tay                             ; Y = 0
+;        lda     #$80
+;        sta     LINNUM+1                ; pointer = $8000, PET screen memory
+;LD758:
+;        ldx     #$0A
+;LD75A:
+;        lda     MICROSOFT-1,x
+;        and     #$3F                    ; PET character code -> screen code
+;        sta     (LINNUM),y              ; write to the screen
+;        iny
+;        bne     LD766
+;        inc     LINNUM+1                ; next page
+;LD766:
+;        dex
+;        bne     LD75A
+;        dec     FORPNT
+;        bne     LD758
+;        rts
 .endif
 
 ; ----------------------------------------------------------------------------
