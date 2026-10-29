@@ -35,8 +35,6 @@ INPUTBUFFERX = INPUTBUFFER & $FF00
 
 ; extra/override ZP variables
 ; @todo check what we are using from this to make the ZP tighter
-POSX			:= $00C6
-TXPSV			:= LASTOP
 USR				:= GORESTART      ; XXX
 
 ; constants
@@ -68,12 +66,8 @@ FOR_STACK2		    := BYTES_FP+4
 
 MAX_EXPON = 10
 
-
 STACK           := $0100
 STACK2          := STACK
-
-
-
 
 CR=13
 LF=10
