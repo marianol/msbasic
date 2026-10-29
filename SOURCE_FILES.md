@@ -53,8 +53,7 @@ Descriptions are inferred from a quick scan of each file.
 | input.s | `INPUT`, `READ`, `GET` and input conversion errors. |
 | inline.s | Line input (`INLIN`) from the console. |
 | iscntc.s | Ctrl-C check using `BIOS_SERIAL_POLL`. Any other key is discarded. Falls into `STOP`. |
-| extra.s | Selects the target's extra code (`EXTRA` segment). |
-| simple6502_extra.s | `MONRDKEY` (blocking, echoes, handles backspace) and `MONRDKEY2` (non-blocking, for GET). |
+| extra.s | `MONRDKEY` (blocking, echoes, handles backspace) and `MONRDKEY2` (non-blocking, for GET), in the `EXTRA` segment. |
 | loadsave.s | LOAD and SAVE stubs (just `rts`). The BIOS has no load/save routine yet. |
 
 ## Build files (not read by the assembler)

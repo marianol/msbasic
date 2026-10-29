@@ -10,7 +10,7 @@ This fork adds a target for [Simple6502](https://github.com/marianol/simple6502)
 Build with `./make_simple6502.sh` (output in `out/`).
 
 * `defines_simple6502.s`: target configuration. It includes `bios_jumptable.inc`, a copy of the BIOS jump table (BIOS v0.6.1 or later, needs `BIOS_SERIAL_POLL`).
-* `simple6502_extra.s`: `MONRDKEY` (blocking, echoes), `MONRDKEY2` (non-blocking, used by GET) and LOAD/SAVE stubs.
+* `extra.s`: `MONRDKEY` (blocking, echoes, handles backspace) and `MONRDKEY2` (non-blocking, used by GET).
 * `simple6502_iscntc.s`: Ctrl-C check.
 * `simple6502.cfg`: linker config. BASIC is in its own `BASROM` region ($DC00) so it can be merged with the BIOS, which uses the `HEADER`, `BIOS`, `WOZMON` and `RESETVECTORS` segments. Because of this, `header.s` uses a `BASHEADER` segment for this target only.
 * `print.s`: the CBM2 `INPUTBUFFER` setup is also used for this target.
