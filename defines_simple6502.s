@@ -44,11 +44,11 @@ SIMPLE6502 := 1                     ; Target platform
 ; ----------------------------------------------------------------------------
 
 ; zero page variables reserved in zeropage.s
-ZP_START1 = $50
-ZP_START2 = $5A
-ZP_START3 = $60
-ZP_START4 = $6B
-ZP_USR    = $4D     ; CHANGED: USR vector (3 bytes, $4D-$4F), see zeropage.s
+BASIC_ZP_START = $4A   ; CHANGED: one block, the variables follow each other (see zeropage.s).
+                       ; It ends at $DD, so $DE-$DF stay free before the BIOS zero page ($E0 TOCKS)
+; CHANGED: top of memory. The BIOS POST stores it in its RAM_SIZE and BASIC reads it from
+; the same place, the memory size prompt is gone. It is the first address that is not RAM.
+MEMSIZ    := $E3    ; $E3/$E4, the BIOS RAM_SIZE
 
 ; inputbuffer
 INPUTBUFFER                 := $0200
@@ -58,8 +58,8 @@ INPUTBUFFERX = INPUTBUFFER & $FF00
 ; constants
 SPACE_FOR_GOSUB := $3E
 STACK_TOP		:= $FA
-WIDTH			:= 40       ; init.s stores both WIDTH in Z17 and Z18 at startup. 
-WIDTH2			:= 30       ; with CONFIG_NO_CR on, they are written but never used
+WIDTH			:= 40       ; not used now: Z17 and Z18 were removed from zeropage.s, the code in
+WIDTH2			:= 30       ; init.s that stored these is commented out (CONFIG_NO_CR)
 
 RAMSTART2		:= $0400        ; is fine for us also it gives room for the INPUTBUFFER
 

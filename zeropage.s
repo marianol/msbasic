@@ -2,13 +2,15 @@
 .feature org_per_seg
 .zeropage
 
+; CHANGED: one block starting at BASIC_ZP_START (defines), the variables follow each
+; other. It used to be four blocks (ZP_START1-4) with gaps between them.
+.org BASIC_ZP_START
+
 ; CHANGED: USR has its own 3 byte vector (JMP), it was an alias of GORESTART.
 ; init.s sets it to JMP IQERR. The user POKEs the routine address into USR+1/USR+2.
-.org ZP_USR
 USR:
 	.res 3
 
-.org ZP_START1
 
 GORESTART:
 	.res 3
@@ -19,20 +21,15 @@ GOAYINT:
 GOGIVEAYF:
 	.res 2
 
-.org ZP_START2
 Z15:
 	.res 1
 POSX:
 	.res 1
-Z17:
-	.res 1
-Z18:
-	.res 1
+; CHANGED: Z17 and Z18 (terminal width) removed, nothing used them.
 LINNUM:
 TXPSV:
 	.res 2
 
-.org ZP_START3
 
 CHARAC:
 	.res 1
@@ -55,7 +52,6 @@ CPRMASK:
 Z14:
 	.res 1
 
-.org ZP_START4
 
 TEMPPT:
 	.res 1
@@ -82,8 +78,7 @@ FRETOP:
 	.res 2
 FRESPC:
 	.res 2
-MEMSIZ:
-	.res 2
+; CHANGED: MEMSIZ removed from here, it is at $E3/$E4 (defines), the BIOS RAM_SIZE.
 CURLIN:
 	.res 2
 OLDLIN:

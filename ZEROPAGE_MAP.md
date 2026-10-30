@@ -1,15 +1,13 @@
 # Zero page map
 
 BASIC variables are from this build (`zeropage.s` + `defines_simple6502.s`, addresses checked against the ld65 label file).
-BIOS variables are from `firmware/defines_simple6502.s` in the simple6502 repo (`main`). WozMon and BASIC never run together, so overlaps with WozMon, monitor and Intel HEX variables are fine; the others need a decision.
+BIOS variables are from `firmware/defines_simple6502.s` in the simple6502 repo (`main`). WozMon and BASIC never run together, so overlaps with WozMon, monitor and Intel HEX variables would be fine.
 
-Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS share bytes, `free` = unused.
+Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `SHARED` = shared on purpose, `OVERLAP` = BASIC and BIOS share bytes by accident, `free` = unused.
 
-## Needs a decision
+## Overlaps
 
-| Bytes | BASIC | BIOS | Problem |
-| ----- | ----- | ---- | ------- |
-| $E0-$E4 | RNDSEED (CHRGET block) | TOCKS ($E0-$E2), RAM_SIZE ($E3-$E4) | BASIC copies its CHRGET block here at startup. |
+None. BASIC's block is $4A-$DD (`BASIC_ZP_START` in the defines). $47-$49 is free below it and $DE-$DF is free above it, before the BIOS `TOCKS` at $E0. `MEMSIZ` at $E3-$E4 is the BIOS `RAM_SIZE`, shared on purpose.
 
 ## Map
 
@@ -35,74 +33,74 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $44 | 1 |  | X_REG | BIOS | monitor register print |
 | $45 | 1 |  | Y_REG | BIOS | monitor register print |
 | $46 | 1 |  | SR_REG | BIOS | monitor register print |
-| $47-$4C | 6 |  |  | free |  |
-| $4D-$4F | 3 | USR |  | BASIC | `USR(x)` vector, a `JMP`. Set to IQERR at startup. POKE 78 (low) and 79 (high) to set the routine address |
-| $50-$52 | 3 | GORESTART |  | BASIC |  |
-| $53-$55 | 3 | GOSTROUT |  | BASIC |  |
-| $56-$57 | 2 | GOAYINT |  | BASIC |  |
-| $58-$59 | 2 | GOGIVEAYF |  | BASIC |  |
-| $5A | 1 | Z15 |  | BASIC | null count after CR; unused in this build |
-| $5B | 1 | POSX |  | BASIC | cursor column |
-| $5C | 1 | Z17 |  | BASIC | terminal width; written, never read |
-| $5D | 1 | Z18 |  | BASIC | last comma zone column; written, never read |
-| $5E-$5F | 2 | LINNUM / TXPSV |  | BASIC | TXPSV (INPUT/READ text pointer save) shares LINNUM |
-| $60 | 1 | CHARAC |  | BASIC |  |
-| $61 | 1 | ENDCHR |  | BASIC |  |
-| $62 | 1 | EOLPNTR |  | BASIC |  |
-| $63 | 1 | DIMFLG |  | BASIC |  |
-| $64-$65 | 2 | VALTYP |  | BASIC |  |
-| $66 | 1 | DATAFLG |  | BASIC |  |
-| $67 | 1 | SUBFLG |  | BASIC |  |
-| $68 | 1 | INPUTFLG |  | BASIC |  |
-| $69 | 1 | CPRMASK |  | BASIC |  |
-| $6A | 1 | Z14 |  | BASIC | output suppress flag (Ctrl-O) |
-| $6B | 1 | TEMPPT |  | BASIC |  |
-| $6C-$6D | 2 | LASTPT |  | BASIC |  |
-| $6E-$76 | 9 | TEMPST |  | BASIC |  |
-| $77-$78 | 2 | INDEX |  | BASIC |  |
-| $79-$7A | 2 | DEST |  | BASIC |  |
-| $7B-$7F | 5 | RESULT |  | BASIC |  |
-| $80-$81 | 2 | TXTTAB |  | BASIC |  |
-| $82-$83 | 2 | VARTAB |  | BASIC |  |
-| $84-$85 | 2 | ARYTAB |  | BASIC |  |
-| $86-$87 | 2 | STREND |  | BASIC |  |
-| $88-$89 | 2 | FRETOP |  | BASIC |  |
-| $8A-$8B | 2 | FRESPC |  | BASIC |  |
-| $8C-$8D | 2 | MEMSIZ |  | BASIC |  |
-| $8E-$8F | 2 | CURLIN |  | BASIC |  |
-| $90-$91 | 2 | OLDLIN |  | BASIC |  |
-| $92-$93 | 2 | OLDTEXT |  | BASIC |  |
-| $94-$95 | 2 | Z8C |  | BASIC | line number of the DATA statement being read |
-| $96-$97 | 2 | DATPTR |  | BASIC |  |
-| $98-$99 | 2 | INPTR |  | BASIC |  |
-| $9A-$9B | 2 | VARNAM |  | BASIC |  |
-| $9C-$9D | 2 | VARPNT |  | BASIC |  |
-| $9E-$9F | 2 | FORPNT |  | BASIC |  |
-| $A0-$A1 | 2 | LASTOP |  | BASIC |  |
-| $A2 | 1 | CPRTYP |  | BASIC |  |
-| $A3-$A4 | 2 | FNCNAM / TEMP3 |  | BASIC |  |
-| $A5-$A7 | 3 | DSCPTR |  | BASIC |  |
-| $A8-$A9 | 2 | DSCLEN |  | BASIC | JMPADRS = DSCLEN+1 ($A9-$AB): a 3 byte `JMP` used to call the functions (`eval.s` stores the address in JMPADRS+1/+2). Overlaps Z52 and ARGEXTENSION on purpose |
-| $AA | 1 | Z52 |  | BASIC | scratch for garbage collection and LEFT$/RIGHT$/MID$ |
-| $AB | 1 | ARGEXTENSION |  | BASIC |  |
-| $AC | 1 | TEMP1 |  | BASIC |  |
-| $AD-$AE | 2 | HIGHDS |  | BASIC |  |
-| $AF-$B0 | 2 | HIGHTR |  | BASIC |  |
-| $B1 | 1 | TEMP2 |  | BASIC |  |
-| $B2 | 1 | INDX / TMPEXP |  | BASIC |  |
-| $B3 | 1 | EXPON |  | BASIC |  |
-| $B4 | 1 | LOWTR / LOWTRX |  | BASIC | LOWTR+1 is EXPSGN |
-| $B5 | 1 | EXPSGN |  | BASIC |  |
-| $B6-$BA | 5 | FAC |  | BASIC |  |
-| $BB | 1 | FACSIGN |  | BASIC |  |
-| $BC | 1 | SERLEN |  | BASIC |  |
-| $BD | 1 | SHIFTSIGNEXT |  | BASIC |  |
-| $BE-$C2 | 5 | ARG |  | BASIC |  |
-| $C3 | 1 | ARGSIGN |  | BASIC |  |
-| $C4-$C5 | 2 | STRNG1 |  | BASIC | SGNCPR = STRNG1, FACEXTENSION = STRNG1+1 |
-| $C6-$C7 | 2 | STRNG2 |  | BASIC |  |
-| $C8-$DF | 24 | CHRGET code |  | BASIC | CHRGOT=$CE, CHRGOT2=$D5, TXTPTR=$CF-$D0 |
-| $E0-$E4 | 5 | RNDSEED | TOCKS ($E0-$E2), RAM_SIZE ($E3-$E4) | OVERLAP | part of the CHRGET block |
+| $47-$49 | 3 |  |  | free |  |
+| $4A-$4C | 3 | USR |  | BASIC | `USR(x)` vector, a `JMP`. Set to IQERR at startup. POKE USR+1 (low) and USR+2 (high) to set the routine address |
+| $4D-$4F | 3 | GORESTART |  | BASIC |  |
+| $50-$52 | 3 | GOSTROUT |  | BASIC |  |
+| $53-$54 | 2 | GOAYINT |  | BASIC |  |
+| $55-$56 | 2 | GOGIVEAYF |  | BASIC |  |
+| $57 | 1 | Z15 |  | BASIC | null count after CR; unused in this build |
+| $58 | 1 | POSX |  | BASIC | cursor column |
+| $59-$5A | 2 | LINNUM / TXPSV |  | BASIC | TXPSV (INPUT/READ text pointer save) shares LINNUM |
+| $5B | 1 | CHARAC |  | BASIC |  |
+| $5C | 1 | ENDCHR |  | BASIC |  |
+| $5D | 1 | EOLPNTR |  | BASIC |  |
+| $5E | 1 | DIMFLG |  | BASIC |  |
+| $5F-$60 | 2 | VALTYP |  | BASIC |  |
+| $61 | 1 | DATAFLG |  | BASIC |  |
+| $62 | 1 | SUBFLG |  | BASIC |  |
+| $63 | 1 | INPUTFLG |  | BASIC |  |
+| $64 | 1 | CPRMASK |  | BASIC |  |
+| $65 | 1 | Z14 |  | BASIC | output suppress flag (Ctrl-O) |
+| $66 | 1 | TEMPPT |  | BASIC |  |
+| $67-$68 | 2 | LASTPT |  | BASIC |  |
+| $69-$71 | 9 | TEMPST |  | BASIC |  |
+| $72-$73 | 2 | INDEX |  | BASIC |  |
+| $74-$75 | 2 | DEST |  | BASIC |  |
+| $76-$7A | 5 | RESULT |  | BASIC |  |
+| $7B-$7C | 2 | TXTTAB |  | BASIC |  |
+| $7D-$7E | 2 | VARTAB |  | BASIC |  |
+| $7F-$80 | 2 | ARYTAB |  | BASIC |  |
+| $81-$82 | 2 | STREND |  | BASIC |  |
+| $83-$84 | 2 | FRETOP |  | BASIC |  |
+| $85-$86 | 2 | FRESPC |  | BASIC |  |
+| $87-$88 | 2 | CURLIN |  | BASIC |  |
+| $89-$8A | 2 | OLDLIN |  | BASIC |  |
+| $8B-$8C | 2 | OLDTEXT |  | BASIC |  |
+| $8D-$8E | 2 | Z8C |  | BASIC | line number of the DATA statement being read |
+| $8F-$90 | 2 | DATPTR |  | BASIC |  |
+| $91-$92 | 2 | INPTR |  | BASIC |  |
+| $93-$94 | 2 | VARNAM |  | BASIC |  |
+| $95-$96 | 2 | VARPNT |  | BASIC |  |
+| $97-$98 | 2 | FORPNT |  | BASIC |  |
+| $99-$9A | 2 | LASTOP |  | BASIC |  |
+| $9B | 1 | CPRTYP |  | BASIC |  |
+| $9C-$9D | 2 | FNCNAM / TEMP3 |  | BASIC |  |
+| $9E-$A0 | 3 | DSCPTR |  | BASIC |  |
+| $A1-$A2 | 2 | DSCLEN |  | BASIC | JMPADRS = DSCLEN+1 (3 bytes): a `JMP` used to call the functions (`eval.s` stores the address in JMPADRS+1/+2). Overlaps Z52 and ARGEXTENSION on purpose |
+| $A3 | 1 | Z52 |  | BASIC | scratch for garbage collection and LEFT$/RIGHT$/MID$ |
+| $A4 | 1 | ARGEXTENSION |  | BASIC |  |
+| $A5 | 1 | TEMP1 |  | BASIC |  |
+| $A6-$A7 | 2 | HIGHDS |  | BASIC |  |
+| $A8-$A9 | 2 | HIGHTR |  | BASIC |  |
+| $AA | 1 | TEMP2 |  | BASIC |  |
+| $AB | 1 | INDX / TMPEXP |  | BASIC |  |
+| $AC | 1 | EXPON |  | BASIC |  |
+| $AD | 1 | LOWTR / LOWTRX |  | BASIC | LOWTR+1 is EXPSGN |
+| $AE | 1 | EXPSGN |  | BASIC |  |
+| $AF-$B3 | 5 | FAC |  | BASIC |  |
+| $B4 | 1 | FACSIGN |  | BASIC |  |
+| $B5 | 1 | SERLEN |  | BASIC |  |
+| $B6 | 1 | SHIFTSIGNEXT |  | BASIC |  |
+| $B7-$BB | 5 | ARG |  | BASIC |  |
+| $BC | 1 | ARGSIGN |  | BASIC |  |
+| $BD-$BE | 2 | STRNG1 |  | BASIC | SGNCPR = STRNG1, FACEXTENSION = STRNG1+1 |
+| $BF-$C0 | 2 | STRNG2 |  | BASIC |  |
+| $C1-$D8 | 24 | CHRGET code |  | BASIC | CHRGOT=$C7, CHRGOT2=$CE, TXTPTR=$C8-$C9 |
+| $D9-$DD | 5 | RNDSEED |  | BASIC | part of the CHRGET block (RND writes the seed here) |
+| $DE-$DF | 2 |  |  | free |  |
+| $E0-$E2 | 3 |  | TOCKS | BIOS | jiffy clock |
+| $E3-$E4 | 2 | MEMSIZ | RAM_SIZE ($E3-$E4) | SHARED | top of memory, first address that is not RAM. The BIOS POST writes it (its RAM_SIZE), BASIC reads it. Shared on purpose |
 | $E5 | 1 |  | PTR_RD_RX_BUF | BIOS |  |
 | $E6 | 1 |  | PTR_WR_RX_BUF | BIOS |  |
 | $E7-$E8 | 2 |  | PTR_TX | BIOS | string pointer |
@@ -115,19 +113,17 @@ These have no descriptive name in the MS BASIC source. Descriptions come from re
 
 | Name | Address | Size | Purpose | Used in this build |
 | ---- | ------- | ---- | ------- | ------------------ |
-| Z14 | $6A | 1 | Output suppress flag. `OUTDO` checks bit 7 and skips printing when it is set. Ctrl-O typed at a line prompt toggles it (`inline.s`). It is cleared at `ERROR`, `RESTART` and `INPUT` (`lsr Z14`), and by a break/STOP (`stx Z14`). Set up at startup by `init.s`. | Yes |
-| Z15 | $5A | 1 | Number of NUL characters to send after a carriage return. Set by the `NULL` statement and at startup, read by `CRDO` in `print.s`. | No. Only assembled with `CONFIG_NULL` or `CONFIG_PRINTNULLS`, neither is defined, so nothing reads or writes it |
-| Z17 | $5C | 1 | Terminal width. `init.s` stores `WIDTH` (40) here. `print.s` compares the cursor column with it to wrap long `PRINT` items. | Written only. The readers are inside `.ifndef CONFIG_NO_CR` and `CONFIG_PRINT_CR`, which are off |
-| Z18 | $5D | 1 | Column after which a comma `PRINT` zone starts a new line. `init.s` stores `WIDTH2` (30) here. | Written only. The reader is inside `.ifndef CONFIG_NO_CR` |
-| Z8C | $94 | 2 | Line number of the `DATA` statement `READ` is working in. `FINDATA` in `input.s` stores it; the syntax error path for bad data puts it in `CURLIN` so the error is reported against the `DATA` line. | Yes |
-| Z52 | $AA | 1 | Scratch byte used in `string.s` in two unrelated places. In garbage collection it keeps the offset from a variable entry to its string descriptor (0 for an array element, 2 for a simple variable, taken from `DSCLEN`). In `SUBSTRING_SETUP` (`LEFT$`, `RIGHT$`, `MID$`) it holds the high byte of the return address while the parameters are popped off the stack. | Yes |
+| Z14 | $65 | 1 | Output suppress flag. `OUTDO` checks bit 7 and skips printing when it is set. Ctrl-O typed at a line prompt toggles it (`inline.s`). It is cleared at `ERROR`, `RESTART` and `INPUT` (`lsr Z14`), and by a break/STOP (`stx Z14`). Set up at startup by `init.s`. | Yes |
+| Z15 | $57 | 1 | Number of NUL characters to send after a carriage return. Set by the `NULL` statement and at startup, read by `CRDO` in `print.s`. | No. Only assembled with `CONFIG_NULL` or `CONFIG_PRINTNULLS`, neither is defined, so nothing reads or writes it. Kept so NULL can be switched on |
+| Z8C | $8D | 2 | Line number of the `DATA` statement `READ` is working in. `FINDATA` in `input.s` stores it; the syntax error path for bad data puts it in `CURLIN` so the error is reported against the `DATA` line. | Yes |
+| Z52 | $A3 | 1 | Scratch byte used in `string.s` in two unrelated places. In garbage collection it keeps the offset from a variable entry to its string descriptor (0 for an array element, 2 for a simple variable, taken from `DSCLEN`). In `SUBSTRING_SETUP` (`LEFT$`, `RIGHT$`, `MID$`) it holds the high byte of the return address while the parameters are popped off the stack. | Yes |
 
-`WIDTH` and `WIDTH2` in `defines_simple6502.s` only feed Z17 and Z18, so with `CONFIG_NO_CR` on they have no effect. They are still needed because `init.s` references them. If `init.s` is cleaned further, removing those writes would free `Z17` and `Z18` ($5C-$5D). `Z15` is also free to remove while `CONFIG_NULL` stays off.
+`Z17` (terminal width) and `Z18` (last comma print zone) were removed. Nothing read them with `CONFIG_NO_CR` on, and the code in `init.s` that wrote them is commented out. `WIDTH` and `WIDTH2` in the defines are not used now either.
 
 ## Totals
 
-* BASIC uses 152 bytes ($4D-$4F and $50-$E4).
+* BASIC uses 150 bytes ($4A-$DD in one block, plus MEMSIZ at $E3-$E4, shared with the BIOS RAM_SIZE).
 * BIOS uses 33 bytes.
-* 76 bytes are free in both.
-* Block starts: ZP_USR=$4D, ZP_START1=$50, ZP_START2=$5A, ZP_START3=$60, ZP_START4=$6B.
+* 75 bytes are free in both.
+* `BASIC_ZP_START` = $4A. The variables in `zeropage.s` follow each other from there.
 * `STACK_TOP` ($FA) is a stack page offset, not a zero page address.

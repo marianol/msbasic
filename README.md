@@ -9,11 +9,11 @@ This fork adds a target for [Simple6502](https://github.com/marianol/simple6502)
 
 Build with `./make_simple6502.sh`. The output is `out/Simple6502-BASIC.bin` (plus the `.o` and the `.lbl` label file).
 
-* `defines_simple6502.s`: target configuration. It includes `bios_jumptable.inc`, a copy of the BIOS jump table (BIOS v0.6.1 or later, needs `BIOS_SERIAL_POLL`).
+* `defines_simple6502.s`: target configuration. BASIC reads the top of memory from `MEMSIZ` ($E3/$E4), the BIOS `RAM_SIZE` that the BIOS POST sets at startup. It includes `bios_jumptable.inc`, a copy of the BIOS jump table (BIOS v0.6.1 or later, needs `BIOS_SERIAL_POLL`).
 * `extra.s`: `MONRDKEY` (blocking, echoes, handles backspace) and `MONRDKEY2` (non-blocking, used by GET).
 * `iscntc.s`: Ctrl-C check.
 * `simple6502.cfg`: linker config. BASIC is in its own `BASROM` region ($DC00) so it can be merged with the BIOS, which uses the `HEADER`, `BIOS`, `WOZMON` and `RESETVECTORS` segments. Because of this, `header.s` uses a `BASHEADER` segment for this target only.
-* `USR(x)`: calls a machine code routine. Set its address first with `POKE 78,low` and `POKE 79,high` (the vector is at $4D-$4F). Until then it gives ILLEGAL QUANTITY.
+* `USR(x)`: calls a machine code routine. Set its address first with `POKE 75,low` and `POKE 76,high` (the vector is at $4A-$4C). Until then it gives ILLEGAL QUANTITY.
 
 ## More Information
 

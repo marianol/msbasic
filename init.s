@@ -5,18 +5,18 @@
 ;
 ; Entry point when BASIC is started (the BIOS jumps here through the vector at
 ; the start of BASIC ROM, see header.s). It sets up the zero page, copies CHRGET
-; into RAM, asks for the memory size and terminal width, prints the banner and
-; the free memory, and ends by jumping to RESTART (the "OK" prompt).
+; into RAM, takes the top of memory from the BIOS, prints the banner and the
+; free memory, and ends by jumping to RESTART (the "OK" prompt).
 ; ============================================================================
 
 ; ----------------------------------------------------------------------------
-; Credits. Reached by typing "A" at the MEMORY SIZE prompt. Prints
-; QT_WRITTEN_BY and then continues into a normal cold start.
+; Credits (removed). They were shown by typing "A" at the MEMORY SIZE prompt,
+; which no longer exists. Kept commented out with QT_WRITTEN_BY.
 ; ----------------------------------------------------------------------------
-PR_WRITTEN_BY:
-      lda     #<QT_WRITTEN_BY
-      ldy     #>QT_WRITTEN_BY
-      jsr     STROUT
+;PR_WRITTEN_BY:
+;      lda     #<QT_WRITTEN_BY
+;      ldy     #>QT_WRITTEN_BY
+;      jsr     STROUT
 
 ; ----------------------------------------------------------------------------
 ; COLD_START
@@ -50,10 +50,11 @@ COLD_START:
         ldy     #>IQERR                 ; USR(x) gives ILLEGAL QUANTITY
         sta     USR+1
         sty     USR+2
-        lda     #WIDTH
-        sta     Z17                     ; default terminal width (see ZEROPAGE_MAP.md)
-        lda     #WIDTH2
-        sta     Z18                     ; default last print zone
+; Terminal width is not used (CONFIG_NO_CR). Z17 and Z18 were removed from zeropage.s.
+;        lda     #WIDTH
+;        sta     Z17                     ; default terminal width (see ZEROPAGE_MAP.md)
+;        lda     #WIDTH2
+;        sta     Z18                     ; default last print zone
 
 
 ; ----------------------------------------------------------------------------
@@ -103,97 +104,47 @@ L4098:                                  ; copy loop, X counts down to 0
         stx     TEMPPT                  ; empty the temporary string descriptor stack
 
 ; ----------------------------------------------------------------------------
-; Step 4: "MEMORY SIZE" prompt
-;   A      = credits (PR_WRITTEN_BY), then a normal start
-;   number = use it as the top of memory (L40EE)
-;   Enter  = detect the top of RAM (L40D7 loop)
+; Step 4: top of memory
+; CHANGED: the BIOS POST finds the top of RAM and stores it in MEMSIZ ($E3/$E4,
+; see the defines). The MEMORY SIZE prompt and the RAM scan were removed.
 ; ----------------------------------------------------------------------------
-        lda     #<QT_MEMORY_SIZE
-        ldy     #>QT_MEMORY_SIZE
-        jsr     STROUT
-        jsr     NXIN                    ; read a line, X/Y point to the buffer
-        stx     TXTPTR
-        sty     TXTPTR+1
-        jsr     CHRGET                  ; first character of the answer
-        cmp     #$41                    ; 'A'?
-        beq     PR_WRITTEN_BY
-        tay                             ; set Z if the line is empty
-        bne     L40EE                   ; something typed, parse it as a number
-        lda     #<RAMSTART2             ; start of RAM for BASIC ($0400)
-        ldy     #>RAMSTART2
-        sta     TXTTAB                  ; program text starts at RAMSTART2
-        sty     TXTTAB+1
-        sta     LINNUM                  ; LINNUM is the address being tested
-        sty     LINNUM+1
-        ldy     #$00
-; Find the top of RAM: walk up one byte at a time. A byte is RAM if $55 and then
-; $AA can be written to it and read back. The first byte that fails is the end.
-; NOTE: there is no upper limit, so this keeps going into the I/O area ($7F00)
-; and writes there if the read back happens to work. The BIOS POST stops at
-; $7F00 and stores the result in RAM_SIZE.
-L40D7:
-        inc     LINNUM
-        bne     L40DD
-        inc     LINNUM+1
-L40DD:
-        lda     #$55 ; 01010101 / 10101010
-        sta     (LINNUM),y
-        cmp     (LINNUM),y
-        bne     L40FA                   ; read back failed, not RAM
-        asl     a                       ; $55 -> $AA
-        sta     (LINNUM),y
-        cmp     (LINNUM),y
-        bne     L40FA; new: slower      ; read back failed, not RAM
-        beq     L40D7                   ; byte is RAM, test the next one
-; The user typed a memory size: parse the number into LINNUM
-L40EE:
-        jsr     CHRGOT
-        jsr     LINGET
-        tay
-        beq     L40FA                   ; end of line, OK
-        jmp     SYNERR                  ; extra characters after the number
-; LINNUM = first address that is not usable, store as the end of memory
-L40FA:
-        lda     LINNUM
-        ldy     LINNUM+1
-        sta     MEMSIZ                  ; top of memory
-        sty     MEMSIZ+1
-        sta     FRETOP                  ; string space grows down from here
+        lda     MEMSIZ
+        ldy     MEMSIZ+1
+        sta     FRETOP                  ; string space grows down from the top of memory
         sty     FRETOP+1
 
 ; ----------------------------------------------------------------------------
-; Step 5: "TERMINAL WIDTH" prompt
-;   Enter  = keep the defaults
-;   number = must be 16 to 255, otherwise it asks again
-; The width goes to Z17 and the last print zone to Z18. With CONFIG_NO_CR on
-; nothing reads them (see ZEROPAGE_MAP.md).
+; Step 5: TERMINAL WIDTH prompt (removed). Z17 and Z18 are not read (CONFIG_NO_CR).
+; The code is kept commented out. It asked for a width of 16 to 255 (Enter = the
+; defaults) and stored it in Z17, and the last print zone in Z18. Z17 and Z18 were
+; removed from zeropage.s, add them back to use this.
 ; ----------------------------------------------------------------------------
-L4106:
-        lda     #<QT_TERMINAL_WIDTH
-        ldy     #>QT_TERMINAL_WIDTH
-        jsr     STROUT
-        jsr     NXIN
-        stx     TXTPTR
-        sty     TXTPTR+1
-        jsr     CHRGET
-        tay
-        beq     L4136                   ; Enter, keep the defaults
-        jsr     LINGET
-        lda     LINNUM+1
-        bne     L4106                   ; more than 255, ask again
-        lda     LINNUM
-        cmp     #$10
-        bcc     L4106                   ; less than 16, ask again
-L2829:
-        sta     Z17                     ; terminal width
-L4129:                                  ; subtract 14 until it goes below 0
-        sbc     #$0E
-        bcs     L4129
-        eor     #$FF
-        sbc     #$0C
-        clc
-        adc     Z17
-        sta     Z18                     ; last print zone
+;L4106:
+;        lda     #<QT_TERMINAL_WIDTH
+;        ldy     #>QT_TERMINAL_WIDTH
+;        jsr     STROUT
+;        jsr     NXIN
+;        stx     TXTPTR
+;        sty     TXTPTR+1
+;        jsr     CHRGET
+;        tay
+;        beq     L4136                   ; Enter, keep the defaults
+;        jsr     LINGET
+;        lda     LINNUM+1
+;        bne     L4106                   ; more than 255, ask again
+;        lda     LINNUM
+;        cmp     #$10
+;        bcc     L4106                   ; less than 16, ask again
+;L2829:
+;        sta     Z17                     ; terminal width
+;L4129:                                  ; subtract 14 until it goes below 0
+;        sbc     #$0E
+;        bcs     L4129
+;        eor     #$FF
+;        sbc     #$0C
+;        clc
+;        adc     Z17
+;        sta     Z18                     ; last print zone
 ; ----------------------------------------------------------------------------
 ; Step 6: set up the program area
 ; ----------------------------------------------------------------------------
@@ -247,23 +198,20 @@ L4192:
 ; Messages
 ; ============================================================================
 
-; Credits, shown when "A" is typed at the MEMORY SIZE prompt
-QT_WRITTEN_BY:
-      ; asc80 "COPYRIGHT 1977 BY MICROSOFT CO"  ; only inAppleSoft Version
-      ; .byte CR,0                              ; only inAppleSoft Version
-      .byte   CR,LF,$0C                         ; FORM FEED
-      ; .byte "WRITTEN BY RICHARD W. WEILAND."  ; Used for version < 1.1
-      .byte   "WRITTEN BY WEILAND & GATES"
-      .byte   CR,LF,0
+; Credits (removed, see PR_WRITTEN_BY)
+;QT_WRITTEN_BY:
+;      ; asc80 "COPYRIGHT 1977 BY MICROSOFT CO"  ; only inAppleSoft Version
+;      ; .byte CR,0                              ; only inAppleSoft Version
+;      .byte   CR,LF,$0C                         ; FORM FEED
+;      ; .byte "WRITTEN BY RICHARD W. WEILAND."  ; Used for version < 1.1
+;      .byte   "WRITTEN BY WEILAND & GATES"
+;      .byte   CR,LF,0
 
-QT_MEMORY_SIZE:
-      .byte   "MEMORY SIZE"
-      .byte   0
-
-QT_TERMINAL_WIDTH:
-      .byte   "TERMINAL "
-      .byte   "WIDTH"
-      .byte   0
+; TERMINAL WIDTH prompt text (removed)
+;QT_TERMINAL_WIDTH:
+;      .byte   "TERMINAL "
+;      .byte   "WIDTH"
+;      .byte   0
 
 ; NOTE: this string has no 0 at the end, it runs into the copyright line below.
 QT_BYTES_FREE:
