@@ -45,12 +45,11 @@ COLD_START:
         sta     GORESTART
         sta     GOSTROUT
         sta     JMPADRS                 ; JMP opcode of the function call trampoline (eval.s)
-        sta     USR
-        lda     #<IQERR
-        ldy     #>IQERR
-        sta     USR+1                   ; USR(x) -> ILLEGAL QUANTITY. NOTE: USR is an alias
-        sty     USR+2                   ; of GORESTART here, so this is replaced by RESTART
-                                        ; at the end of init (see the defines)
+        sta     USR                     ; CHANGED: USR is its own vector now (zeropage.s).
+        lda     #<IQERR                 ; JMP IQERR until the user sets the address, so
+        ldy     #>IQERR                 ; USR(x) gives ILLEGAL QUANTITY
+        sta     USR+1
+        sty     USR+2
         lda     #WIDTH
         sta     Z17                     ; default terminal width (see ZEROPAGE_MAP.md)
         lda     #WIDTH2

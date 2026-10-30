@@ -35,8 +35,9 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $44 | 1 |  | X_REG | BIOS | monitor register print |
 | $45 | 1 |  | Y_REG | BIOS | monitor register print |
 | $46 | 1 |  | SR_REG | BIOS | monitor register print |
-| $47-$4F | 9 |  |  | free |  |
-| $50-$52 | 3 | GORESTART / USR |  | BASIC | USR(x) jumps here |
+| $47-$4C | 6 |  |  | free |  |
+| $4D-$4F | 3 | USR |  | BASIC | `USR(x)` vector, a `JMP`. Set to IQERR at startup. POKE 78 (low) and 79 (high) to set the routine address |
+| $50-$52 | 3 | GORESTART |  | BASIC |  |
 | $53-$55 | 3 | GOSTROUT |  | BASIC |  |
 | $56-$57 | 2 | GOAYINT |  | BASIC |  |
 | $58-$59 | 2 | GOGIVEAYF |  | BASIC |  |
@@ -125,8 +126,8 @@ These have no descriptive name in the MS BASIC source. Descriptions come from re
 
 ## Totals
 
-* BASIC uses 149 bytes ($50-$E4).
+* BASIC uses 152 bytes ($4D-$4F and $50-$E4).
 * BIOS uses 33 bytes.
-* 79 bytes are free in both.
-* Block starts: ZP_START1=$50, ZP_START2=$5A, ZP_START3=$60, ZP_START4=$6B.
+* 76 bytes are free in both.
+* Block starts: ZP_USR=$4D, ZP_START1=$50, ZP_START2=$5A, ZP_START3=$60, ZP_START4=$6B.
 * `STACK_TOP` ($FA) is a stack page offset, not a zero page address.

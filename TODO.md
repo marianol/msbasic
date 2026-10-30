@@ -4,7 +4,8 @@
 - [x] Figure out what each source in SOURCE_FILES.md does.
 - [x] Create a reference binary and a script that can compile and check against it as I am cleaning up in the source
 - [ ] see opportunities for file consolidation
-- [ ] the `CONFIG_*` flags (and `SIMPLE6502`) in the defines are not read by any source now, the code was resolved. Remove them or keep them as documentation. Only `CONFIG_NULL` is still used. The `-D simple6502` in the build scripts is not needed either
+- [x] the `CONFIG_*` flags in the defines are not read by any source now. They are commented out in one block as documentation of how it was configured. Only `CONFIG_NULL` is still used
+- [ ] the `-D simple6502` in the build scripts is not needed any more (the build works without it)
 - [x] clean up souces for .ifdef(s) that refer to other architectures.
   - Only the `CONFIG_NULL` / `CONFIG_PRINTNULLS` conditionals are left on purpose (token.s, flow1.s, print.s, init.s). To enable NULL uncomment `CONFIG_NULL` and `NULL_MAX` in the defines.
 - [ ] update init.s once the cleanup is done:
@@ -15,7 +16,10 @@
   - [ ] `DSCLEN` is set to 3 twice in the cold start, remove one (changes the binary, rebuild the reference)
 - [ ] zero page ($E0-$E4): the BASIC `RNDSEED` overlaps the BIOS `TOCKS` and `RAM_SIZE`. Move one of them (see ZEROPAGE_MAP.md). Must be decided before init.s uses `RAM_SIZE`
 - [ ] `ENTROPY` in the defines is unused now. Use the timer for the `RND` seed or remove it
-- [ ] `USR` is an alias of `GORESTART` ($50), so `USR(x)` ends up at the OK prompt. Give it its own vector
+- [x] `USR` has its own vector at $4D-$4F (it was an alias of `GORESTART`)
+- [ ] TEST `USR` in the emulator (not tested yet):
+  - `PRINT USR(0)` should give `?ILLEGAL QUANTITY ERROR`
+  - load a routine ending in `RTS` (for example at $0300), then `POKE 78,0 : POKE 79,3 : X=USR(5)` should run it and return to the OK prompt
 - [ ] `LOAD` and `SAVE` are stubs (`loadsave.s`), hook them to the BIOS
 
 ### From original source

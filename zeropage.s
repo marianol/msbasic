@@ -2,6 +2,12 @@
 .feature org_per_seg
 .zeropage
 
+; CHANGED: USR has its own 3 byte vector (JMP), it was an alias of GORESTART.
+; init.s sets it to JMP IQERR. The user POKEs the routine address into USR+1/USR+2.
+.org ZP_USR
+USR:
+	.res 3
+
 .org ZP_START1
 
 GORESTART:

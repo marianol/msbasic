@@ -6,40 +6,54 @@ SIMPLE6502 := 1                     ; Target platform
 ; Simple6502 BIOS entry points (BIOS_* labels from the BIOS jump table)
 .include "bios_jumptable.inc"
 
-; configuration
-CONFIG_2A   := 1
-CONFIG_2    := 1
-CONFIG_11A  := 1
-CONFIG_11   := 1
-CONFIG_10A  := 1
-
-CONFIG_DATAFLG := 1                 ; ???
-CONFIG_EASTER_EGG := 1              ; include the CBM2 “WAIT 6502″ easter egg
-CONFIG_NO_CR := 1                   ; no automatic line wrap in PRINT/TAB/comma zones (terminal wraps itself)
-CONFIG_NO_LINE_EDITING := 1         ; disable support for Microsoft-style “@”, “_”, BEL etc.
-CONFIG_NO_READ_Y_IS_ZERO_HACK := 1  ; don’t do a very volatile trick that saves one byte
-; NULL statement (not enabled). To use it, uncomment both lines. Other platforms used
-; NULL_MAX = $0A (OSI, CBM1) or $F0-$F2 (AIM65, KIM, MICROTAN, SYM1).
+; ----------------------------------------------------------------------------
+; Build configuration (reference only)
+;
+; These are the CONFIG_ settings this source was configured with. They are
+; commented out on purpose: the source no longer tests them, the code for the
+; other settings was removed when it was cleaned up for the Simple6502. They are
+; kept here to document how it was configured.
+; The only symbol still tested is CONFIG_NULL (see the end of this block).
+;
+; BASIC version level. CONFIG_2A implies the lower ones, so all the Microsoft
+; bugfixes up to version 2A are in (the level of CBM2, AIM-65 and SYM-1).
+; CONFIG_2A := 1
+; CONFIG_2 := 1
+; CONFIG_11A := 1
+; CONFIG_11 := 1
+; CONFIG_10A := 1
+;
+; Features and options
+; CONFIG_DATAFLG := 1                 ; LIST does not expand tokens inside quoted strings
+; CONFIG_EASTER_EGG := 1              ; include the CBM2 "WAIT 6502" easter egg
+; CONFIG_NO_CR := 1                   ; no automatic line wrap in PRINT/TAB/comma zones (terminal wraps itself)
+; CONFIG_NO_LINE_EDITING := 1         ; disable support for Microsoft-style "@", "_", BEL etc.
+; CONFIG_NO_READ_Y_IS_ZERO_HACK := 1  ; don't do a very volatile trick that saves one byte
+; CONFIG_PEEK_SAVE_LINNUM := 1        ; preserve LINNUM on a PEEK
+; CONFIG_SCRTCH_ORDER := 2            ; init calls SCRTCH (NEW) after printing the BYTES FREE banner
+;
+; Derived from INPUTBUFFER being at $0200 (outside zero page)
+; CONFIG_NO_INPUTBUFFER_ZP := 1
+; CONFIG_INPUTBUFFER_0200 := 1
+;
+; NULL statement (not enabled, and the only one still tested by the source).
+; To use it, uncomment both lines. Other platforms used NULL_MAX = $0A (OSI, CBM1)
+; or $F0-$F2 (AIM65, KIM, MICROTAN, SYM1).
 ; CONFIG_NULL := 1
 ; NULL_MAX := $0A
-CONFIG_PEEK_SAVE_LINNUM := 1        ; preserve LINNUM on a PEEK
-CONFIG_SCRTCH_ORDER := 2            ; ?? where in the init code to call SCRTCH
+; ----------------------------------------------------------------------------
 
 ; zero page variables reserved in zeropage.s
 ZP_START1 = $50
 ZP_START2 = $5A
 ZP_START3 = $60
 ZP_START4 = $6B
+ZP_USR    = $4D     ; CHANGED: USR vector (3 bytes, $4D-$4F), see zeropage.s
 
 ; inputbuffer
 INPUTBUFFER                 := $0200
-CONFIG_NO_INPUTBUFFER_ZP    := 1
-CONFIG_INPUTBUFFER_0200     := 1
 INPUTBUFFERX = INPUTBUFFER & $FF00
 
-; extra/override ZP variables
-; @todo check what we are using from this to make the ZP tighter
-USR				:= GORESTART      ; XXX
 
 ; constants
 SPACE_FOR_GOSUB := $3E
@@ -57,7 +71,7 @@ ENTROPY = $E844             ; for RND seed, pulls 8 bits of the count value for 
 
 ; monitor functions
 MONCOUT	:= BIOS_SERIAL_OUT  ; character out, preserves A, X and Y
-; MONRDKEY, MONRDKEY2, LOAD and SAVE are in simple6502_extra.s
+; MONRDKEY and MONRDKEY2 are in extra.s, LOAD and SAVE in loadsave.s
 
 ; Floating point parameters - @todo check if true
 BYTES_FP		    := 5

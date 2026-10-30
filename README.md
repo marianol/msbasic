@@ -11,9 +11,9 @@ Build with `./make_simple6502.sh` (output in `out/`).
 
 * `defines_simple6502.s`: target configuration. It includes `bios_jumptable.inc`, a copy of the BIOS jump table (BIOS v0.6.1 or later, needs `BIOS_SERIAL_POLL`).
 * `extra.s`: `MONRDKEY` (blocking, echoes, handles backspace) and `MONRDKEY2` (non-blocking, used by GET).
-* `simple6502_iscntc.s`: Ctrl-C check.
+* `iscntc.s`: Ctrl-C check.
 * `simple6502.cfg`: linker config. BASIC is in its own `BASROM` region ($DC00) so it can be merged with the BIOS, which uses the `HEADER`, `BIOS`, `WOZMON` and `RESETVECTORS` segments. Because of this, `header.s` uses a `BASHEADER` segment for this target only.
-* `print.s`: the CBM2 `INPUTBUFFER` setup is also used for this target.
+* `USR(x)`: calls a machine code routine. Set its address first with `POKE 78,low` and `POKE 79,high` (the vector is at $4D-$4F). Until then it gives ILLEGAL QUANTITY.
 
 ## More Information
 
