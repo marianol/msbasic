@@ -1,12 +1,8 @@
-if [ ! -d out ]; then
-	mkdir out
-fi
+#!/bin/sh
+# Assembles and links the Simple6502 BASIC. Output (.o, .bin and .lbl) goes to out/.
 
-for i in simple6502; do
+NAME=Simple6502-BASIC
 
-echo $i
-ca65 -D $i msbasic.s -o out/$i.o &&
-ld65 -C $i.cfg out/$i.o -o out/$i.bin -Ln out/$i.lbl
-
-done
-
+mkdir -p out &&
+ca65 msbasic.s -o out/$NAME.o &&
+ld65 -C simple6502.cfg out/$NAME.o -o out/$NAME.bin -Ln out/$NAME.lbl

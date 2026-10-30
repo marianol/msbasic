@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Build scripts simplified (no `-D`, no loop). The output is now
+  `out/Simple6502-BASIC.bin` (plus `.o` and `.lbl`).
 - `USR` has its own 3 byte vector at $4D-$4F (`ZP_USR`). It was an alias of
   `GORESTART`, so `USR(x)` ended up at the OK prompt. It now gives ILLEGAL
   QUANTITY until the routine address is POKEd into $4E/$4F (78/79).

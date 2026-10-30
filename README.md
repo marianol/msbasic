@@ -7,7 +7,7 @@ This is based on the https://github.com/mist64/msbasic project. This branch is i
 
 This fork adds a target for [Simple6502](https://github.com/marianol/simple6502), a homebrew 6502 SBC with a serial terminal. It is based on the CBM2 configuration (CONFIG_2A, `INPUTBUFFER` at $0200).
 
-Build with `./make_simple6502.sh` (output in `out/`).
+Build with `./make_simple6502.sh`. The output is `out/Simple6502-BASIC.bin` (plus the `.o` and the `.lbl` label file).
 
 * `defines_simple6502.s`: target configuration. It includes `bios_jumptable.inc`, a copy of the BIOS jump table (BIOS v0.6.1 or later, needs `BIOS_SERIAL_POLL`).
 * `extra.s`: `MONRDKEY` (blocking, echoes, handles backspace) and `MONRDKEY2` (non-blocking, used by GET).

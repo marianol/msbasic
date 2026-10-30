@@ -3,9 +3,9 @@
 
 - [x] Figure out what each source in SOURCE_FILES.md does.
 - [x] Create a reference binary and a script that can compile and check against it as I am cleaning up in the source
-- [ ] see opportunities for file consolidation
+- [x] see opportunities for file consolidation
 - [x] the `CONFIG_*` flags in the defines are not read by any source now. They are commented out in one block as documentation of how it was configured. Only `CONFIG_NULL` is still used
-- [ ] the `-D simple6502` in the build scripts is not needed any more (the build works without it)
+- [x] the `-D simple6502` in the build scripts is not needed any more (the build works without it)
 - [x] clean up souces for .ifdef(s) that refer to other architectures.
   - Only the `CONFIG_NULL` / `CONFIG_PRINTNULLS` conditionals are left on purpose (token.s, flow1.s, print.s, init.s). To enable NULL uncomment `CONFIG_NULL` and `NULL_MAX` in the defines.
 - [ ] update init.s once the cleanup is done:

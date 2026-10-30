@@ -1,7 +1,7 @@
 # Files read by the simple6502 build
 
-Build: `ca65 -D simple6502 msbasic.s` (see `make_simple6502.sh`).
-List generated with `ca65 -D simple6502 msbasic.s --create-dep`.
+Build: `ca65 msbasic.s` (see `make_simple6502.sh`).
+List generated with `ca65 msbasic.s --create-dep`.
 
 Descriptions are inferred from a quick scan of each file.
 
@@ -61,6 +61,6 @@ Descriptions are inferred from a quick scan of each file.
 | File | What it does |
 | ---- | ------------ |
 | simple6502.cfg | ld65 linker config and memory map. |
-| make_simple6502.sh | Assembles and links the Simple6502 target into `out/`. |
+| make_simple6502.sh | Assembles and links the Simple6502 target into `out/Simple6502-BASIC.bin` (plus `.o` and `.lbl`). |
 | compare_simple6502.sh | Builds the target and compares it byte by byte with `ref/simple6502_ref.bin`. |
 | ref/simple6502_ref.bin | Reference binary. Rebuilt after adding the entry jumps in `header.s`. |
