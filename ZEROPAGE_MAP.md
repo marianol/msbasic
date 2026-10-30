@@ -40,10 +40,10 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $53-$55 | 3 | GOSTROUT |  | BASIC |  |
 | $56-$57 | 2 | GOAYINT |  | BASIC |  |
 | $58-$59 | 2 | GOGIVEAYF |  | BASIC |  |
-| $5A | 1 | Z15 |  | BASIC |  |
+| $5A | 1 | Z15 |  | BASIC | null count after CR; unused in this build |
 | $5B | 1 | POSX |  | BASIC | cursor column |
-| $5C | 1 | Z17 |  | BASIC |  |
-| $5D | 1 | Z18 |  | BASIC |  |
+| $5C | 1 | Z17 |  | BASIC | terminal width; written, never read |
+| $5D | 1 | Z18 |  | BASIC | last comma zone column; written, never read |
 | $5E-$5F | 2 | LINNUM / TXPSV |  | BASIC | TXPSV (INPUT/READ text pointer save) shares LINNUM |
 | $60 | 1 | CHARAC |  | BASIC |  |
 | $61 | 1 | ENDCHR |  | BASIC |  |
@@ -54,7 +54,7 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $67 | 1 | SUBFLG |  | BASIC |  |
 | $68 | 1 | INPUTFLG |  | BASIC |  |
 | $69 | 1 | CPRMASK |  | BASIC |  |
-| $6A | 1 | Z14 |  | BASIC |  |
+| $6A | 1 | Z14 |  | BASIC | output suppress flag (Ctrl-O) |
 | $6B | 1 | TEMPPT |  | BASIC |  |
 | $6C-$6D | 2 | LASTPT |  | BASIC |  |
 | $6E-$76 | 9 | TEMPST |  | BASIC |  |
@@ -71,7 +71,7 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $8E-$8F | 2 | CURLIN |  | BASIC |  |
 | $90-$91 | 2 | OLDLIN |  | BASIC |  |
 | $92-$93 | 2 | OLDTEXT |  | BASIC |  |
-| $94-$95 | 2 | Z8C |  | BASIC |  |
+| $94-$95 | 2 | Z8C |  | BASIC | line number of the DATA statement being read |
 | $96-$97 | 2 | DATPTR |  | BASIC |  |
 | $98-$99 | 2 | INPTR |  | BASIC |  |
 | $9A-$9B | 2 | VARNAM |  | BASIC |  |
@@ -82,7 +82,7 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $A3-$A4 | 2 | FNCNAM / TEMP3 |  | BASIC |  |
 | $A5-$A7 | 3 | DSCPTR |  | BASIC |  |
 | $A8-$A9 | 2 | DSCLEN |  | BASIC | JMPADRS = DSCLEN+1 (KBD only, unused) |
-| $AA | 1 | Z52 |  | BASIC |  |
+| $AA | 1 | Z52 |  | BASIC | scratch for garbage collection and LEFT$/RIGHT$/MID$ |
 | $AB | 1 | ARGEXTENSION |  | BASIC |  |
 | $AC | 1 | TEMP1 |  | BASIC |  |
 | $AD-$AE | 2 | HIGHDS |  | BASIC |  |
@@ -107,6 +107,21 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $E7-$E8 | 2 |  | PTR_TX | BIOS | string pointer |
 | $E9-$EA | 2 |  | POST_PTR | BIOS | POST RAM walk |
 | $EB-$FF | 21 |  |  | free |  |
+
+## What the Zxx variables do
+
+These have no descriptive name in the MS BASIC source. Descriptions come from reading the code that uses them.
+
+| Name | Address | Size | Purpose | Used in this build |
+| ---- | ------- | ---- | ------- | ------------------ |
+| Z14 | $6A | 1 | Output suppress flag. `OUTDO` checks bit 7 and skips printing when it is set. Ctrl-O typed at a line prompt toggles it (`inline.s`). It is cleared at `ERROR`, `RESTART` and `INPUT` (`lsr Z14`), and by a break/STOP (`stx Z14`). Set up at startup by `init.s`. | Yes |
+| Z15 | $5A | 1 | Number of NUL characters to send after a carriage return. Set by the `NULL` statement and at startup, read by `CRDO` in `print.s`. | No. Only assembled with `CONFIG_NULL` or `CONFIG_PRINTNULLS`, neither is defined, so nothing reads or writes it |
+| Z17 | $5C | 1 | Terminal width. `init.s` stores `WIDTH` (40) here. `print.s` compares the cursor column with it to wrap long `PRINT` items. | Written only. The readers are inside `.ifndef CONFIG_NO_CR` and `CONFIG_PRINT_CR`, which are off |
+| Z18 | $5D | 1 | Column after which a comma `PRINT` zone starts a new line. `init.s` stores `WIDTH2` (30) here. | Written only. The reader is inside `.ifndef CONFIG_NO_CR` |
+| Z8C | $94 | 2 | Line number of the `DATA` statement `READ` is working in. `FINDATA` in `input.s` stores it; the syntax error path for bad data puts it in `CURLIN` so the error is reported against the `DATA` line. | Yes |
+| Z52 | $AA | 1 | Scratch byte used in `string.s` in two unrelated places. In garbage collection it keeps the offset from a variable entry to its string descriptor (0 for an array element, 2 for a simple variable, taken from `DSCLEN`). In `SUBSTRING_SETUP` (`LEFT$`, `RIGHT$`, `MID$`) it holds the high byte of the return address while the parameters are popped off the stack. | Yes |
+
+`WIDTH` and `WIDTH2` in `defines_simple6502.s` only feed Z17 and Z18, so with `CONFIG_NO_CR` on they have no effect. They are still needed because `init.s` references them. If `init.s` is cleaned further, removing those writes would free `Z17` and `Z18` ($5C-$5D). `Z15` is also free to remove while `CONFIG_NULL` stays off.
 
 ## Totals
 
