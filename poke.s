@@ -85,3 +85,19 @@ L362C:
 RTS3:
         rts
 
+
+; ----------------------------------------------------------------------------
+; "SYS" STATEMENT: SYS address
+;
+; ADDED (not in the original source, the CBM KERNAL had it).
+; Calls the machine code routine at the address (0 to 65535). The routine
+; returns to BASIC with RTS. ILLEGAL QUANTITY if the address is negative or
+; above 65535 (GETADR). Unlike the CBM it does not load the A, X, Y and P registers.
+; ----------------------------------------------------------------------------
+SYS:
+        jsr     FRMNUM          ; evaluate the address
+        jsr     GETADR          ; 16-bit address in LINNUM, ILLEGAL QUANTITY if out of range
+        jsr     SYSGO           ; the routine returns here with RTS
+        rts
+SYSGO:
+        jmp     (LINNUM)

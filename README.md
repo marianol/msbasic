@@ -13,6 +13,7 @@ Build with `./make_simple6502.sh`. The output is `out/Simple6502-BASIC.bin` (plu
 * `extra.s`: `MONRDKEY` (blocking, echoes, handles backspace) and `MONRDKEY2` (non-blocking, used by GET).
 * `iscntc.s`: Ctrl-C check.
 * `simple6502.cfg`: linker config. BASIC is in its own `BASROM` region ($DC00) so it can be merged with the BIOS, which uses the `HEADER`, `BIOS`, `WOZMON` and `RESETVECTORS` segments. Because of this, `header.s` uses a `BASHEADER` segment for this target only.
+* `SYS address`: calls a machine code routine at the address (0 to 65535) and returns to BASIC on `RTS`. Out of range gives ILLEGAL QUANTITY. Unlike the CBM it does not load the A, X, Y and P registers.
 * `USR(x)`: calls a machine code routine. Set its address first with `POKE 75,low` and `POKE 76,high` (the vector is at $4A-$4C). Until then it gives ILLEGAL QUANTITY.
 
 ## More Information

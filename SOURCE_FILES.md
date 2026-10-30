@@ -43,7 +43,7 @@ Descriptions are inferred from a quick scan of each file.
 | float.s | Floating point routines. Includes the CBM2 "WAIT 6502" Easter egg. |
 | trig.s | `SIN`, `COS`, `TAN`, `ATN`. |
 | rnd.s | `RND` and the random number seed. |
-| poke.s | `PEEK`, `POKE`, `WAIT` and related argument parsing. |
+| poke.s | `PEEK`, `POKE`, `WAIT` and related argument parsing, and `SYS` (added). |
 
 ## Input and output
 

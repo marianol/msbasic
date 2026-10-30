@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `SYS address` statement (`poke.s`, keyword in `token.s`). Calls a machine code routine at
+  0-65535 and returns on `RTS`, ILLEGAL QUANTITY if out of range. It does not load the CPU
+  registers like the CBM does. The token numbers after `CLEAR` moved by one. Tested in the emulator.
 - `SOURCE_FILES.md`: files the simple6502 build reads, with a short
   description of each.
 - This changelog.
