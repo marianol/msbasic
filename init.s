@@ -1,130 +1,69 @@
 .segment "INIT"
 
-.ifdef KBD
-FNDLIN2:
-        php
-        jmp     FNDLIN
-.endif
+; ============================================================================
+; COLD START
+;
+; Entry point when BASIC is started (the BIOS jumps here through the vector at
+; the start of BASIC ROM, see header.s). It sets up the zero page, copies CHRGET
+; into RAM, asks for the memory size and terminal width, prints the banner and
+; the free memory, and ends by jumping to RESTART (the "OK" prompt).
+; ============================================================================
 
 ; ----------------------------------------------------------------------------
+; Credits. Reached by typing "A" at the MEMORY SIZE prompt. Prints
+; QT_WRITTEN_BY and then continues into a normal cold start.
+; ----------------------------------------------------------------------------
 PR_WRITTEN_BY:
-.ifndef KBD
-  .ifndef CONFIG_CBM_ALL
-    .ifndef AIM65
-      .ifndef SYM1
-        lda     #<QT_WRITTEN_BY
-        ldy     #>QT_WRITTEN_BY
-        jsr     STROUT
-      .endif
-    .endif
-  .endif
-.endif
+      lda     #<QT_WRITTEN_BY
+      ldy     #>QT_WRITTEN_BY
+      jsr     STROUT
+
+; ----------------------------------------------------------------------------
+; COLD_START
+; Step 1: stack and zero page vectors
+; ----------------------------------------------------------------------------
 COLD_START:
-.ifdef SYM1
-        jsr     ACCESS
-.endif
-.ifdef KBD
-        lda     #<LFD81
-        sta     $03A0
-        lda     #>LFD81
-        sta     $03A1
-        lda     #$20
-        sta     $0480
-        lda     $0352
-        sta     $04
-        lda     $0353
-        sta     $05
-.else
-  .ifndef CBM2
         ldx     #$FF
-        stx     CURLIN+1
-  .endif
-  .ifdef CONFIG_NO_INPUTBUFFER_ZP
+        stx     CURLIN+1                ; $FF in the high byte = direct mode
         ldx     #$FB
-  .elseif .def(AIM65)
-        ldx     #$FE
-  .endif
-        txs
-  .ifndef CONFIG_CBM_ALL
+        txs                             ; stack pointer
         lda     #<COLD_START
         ldy     #>COLD_START
-        sta     GORESTART+1
+        sta     GORESTART+1             ; GORESTART: JMP to COLD_START for now
         sty     GORESTART+2
-    .ifndef AIM65
-        sta     GOSTROUT+1
+        sta     GOSTROUT+1              ; GOSTROUT: JMP to COLD_START for now
         sty     GOSTROUT+2
         lda     #<AYINT
         ldy     #>AYINT
-        sta     GOAYINT
+        sta     GOAYINT                 ; GOAYINT: vector to AYINT (float to integer)
         sty     GOAYINT+1
         lda     #<GIVAYF
         ldy     #>GIVAYF
-        sta     GOGIVEAYF
+        sta     GOGIVEAYF               ; GOGIVEAYF: vector to GIVAYF (integer to float)
         sty     GOGIVEAYF+1
-    .endif
-  .endif
-        lda     #$4C
-  .ifdef CONFIG_CBM_ALL
-        sta     JMPADRS
-  .endif
+        lda     #$4C                    ; $4C = JMP opcode
         sta     GORESTART
-  .ifdef AIM65
-        sta     JMPADRS
-        sta     ATN
         sta     GOSTROUT
-  .else
-  .ifndef CONFIG_CBM_ALL
-        sta     GOSTROUT
-        sta     JMPADRS
-  .endif
-  .ifdef SYM1
-        sta     USR1
-        sta     USR3
-        sta     USR2
-  .endif
-  .if (!.def(CONFIG_RAM)) && (!.def(CONFIG_CBM_ALL))
+        sta     JMPADRS                 ; JMPADRS is only used by KBD, harmless here
         sta     USR
-  .endif
-  .endif
-
-  .ifndef CONFIG_RAM
-    .ifdef APPLE
-          lda     #<USR_FUNC
-          ldy     #>USR_FUNC
-    .else
-          lda     #<IQERR
-          ldy     #>IQERR
-    .endif
-    .ifdef AIM65
-          sta     ATN+1
-          sty     ATN+2
-          sta     GOSTROUT+1
-          sty     GOSTROUT+2
-    .else
-          sta     USR+1
-          sty     USR+2
-      .ifdef SYM1
-          sta     USR1+1
-          sty     USR1+2
-          lda     #<DUMPT
-          ldy     #>DUMPT
-          sta     USR2+1
-          sty     USR2+2
-          lda     #<L8C78
-          ldy     #>L8C78
-          sta     USR3+1
-          sty     USR3+2
-      .endif
-    .endif
-  .endif
-  .ifndef CBM1
+        lda     #<IQERR
+        ldy     #>IQERR
+        sta     USR+1                   ; USR(x) -> ILLEGAL QUANTITY. NOTE: USR is an alias
+        sty     USR+2                   ; of GORESTART here, so this is replaced by RESTART
+                                        ; at the end of init (see the defines)
         lda     #WIDTH
-        sta     Z17
+        sta     Z17                     ; default terminal width (see ZEROPAGE_MAP.md)
         lda     #WIDTH2
-        sta     Z18
-  .endif
-.endif
+        sta     Z18                     ; default last print zone
 
+
+; ----------------------------------------------------------------------------
+; Step 2: copy CHRGET into RAM (zero page)
+;
+; GENERIC_CHRGET in ROM (chrget.s) is the text scanner. It modifies its own
+; code (the TXTPTR operand), so it must run from RAM. It is copied to CHRGET
+; in zero page, together with the random number seed.
+;
 ; All non-CONFIG_SMALL versions of BASIC have
 ; the same bug here: While the number of bytes
 ; to be copied is correct for CONFIG_SMALL,
@@ -136,398 +75,220 @@ COLD_START:
 ; which is nothing major, because it is just
 ; the least significant 8 bits of the mantissa
 ; of the random number seed.
-; KBD added three bytes to CHRGET and removed
-; the random number seed, but only adjusted
-; the number of bytes by adding 3 - this
-; copies four bytes too many, which is no
-; problem.
-.ifdef CONFIG_SMALL
-  .ifdef KBD
-        ldx     #GENERIC_CHRGET_END-GENERIC_CHRGET+4
-  .else
-        ldx     #GENERIC_CHRGET_END-GENERIC_CHRGET
-  .endif
-.else
+; ----------------------------------------------------------------------------
         ldx     #GENERIC_CHRGET_END-GENERIC_CHRGET-1 ; XXX
-.endif
-L4098:
+L4098:                                  ; copy loop, X counts down to 0
         lda     GENERIC_CHRGET-1,x
         sta     CHRGET-1,x
         dex
         bne     L4098
-.ifdef CONFIG_2
+
+; ----------------------------------------------------------------------------
+; Step 3: initialize variables (X is 0 here)
+; ----------------------------------------------------------------------------
         lda     #$03
-        sta     DSCLEN
-.endif
-.ifndef KBD
-        txa
+        sta     DSCLEN                  ; (set again a few lines below, same value)
+        txa                             ; A = 0
         sta     SHIFTSIGNEXT
-  .ifdef CONFIG_CBM_ALL
-        sta     CURDVC
-  .endif
         sta     LASTPT+1
-  .ifndef AIM65
-  .if .defined(CONFIG_NULL) || .defined(CONFIG_PRINTNULLS)
-        sta     Z15
-  .endif
-  .endif
-  .ifndef CONFIG_11
-        sta     POSX
-  .endif
-        pha
-        sta     Z14
-  .ifndef CBM2
-   .ifndef AIM65
-   .ifndef SYM1
-    .ifndef MICROTAN
+        pha                             ; push 0 as the bottom of the stack marker, the
+                                        ; FOR/GOSUB frame search stops at it
+        sta     Z14                     ; output is not suppressed
         lda     #$03
         sta     DSCLEN
-    .endif
-   .endif
-   .endif
-    .ifndef CONFIG_11
-        lda     #$2C
-        sta     LINNUM+1
-    .endif
-        jsr     CRDO
-  .endif
-  .ifdef CBM2
-        inx
-        stx     INPUTBUFFER-3
-        stx     INPUTBUFFER-4
-  .endif
-  .ifdef APPLE
-        lda     #$01
-        sta     INPUTBUFFER-3
-        sta     INPUTBUFFER-4
-  .endif
+        jsr     CRDO                    ; start on a new line
         ldx     #TEMPST
-        stx     TEMPPT
-.ifndef CONFIG_CBM_ALL
+        stx     TEMPPT                  ; empty the temporary string descriptor stack
+
+; ----------------------------------------------------------------------------
+; Step 4: "MEMORY SIZE" prompt
+;   A      = credits (PR_WRITTEN_BY), then a normal start
+;   number = use it as the top of memory (L40EE)
+;   Enter  = detect the top of RAM (L40D7 loop)
+; ----------------------------------------------------------------------------
         lda     #<QT_MEMORY_SIZE
         ldy     #>QT_MEMORY_SIZE
         jsr     STROUT
-  .ifdef APPLE
-        jsr     INLINX
-  .else
-        jsr     NXIN
-  .endif
+        jsr     NXIN                    ; read a line, X/Y point to the buffer
         stx     TXTPTR
         sty     TXTPTR+1
-        jsr     CHRGET
-  .ifndef AIM65
-    .ifndef SYM1
-        cmp     #$41
+        jsr     CHRGET                  ; first character of the answer
+        cmp     #$41                    ; 'A'?
         beq     PR_WRITTEN_BY
-    .endif
-  .endif
-        tay
-        bne     L40EE
-.endif
-.ifndef CBM2
-        lda     #<RAMSTART2
-.endif
+        tay                             ; set Z if the line is empty
+        bne     L40EE                   ; something typed, parse it as a number
+        lda     #<RAMSTART2             ; start of RAM for BASIC ($0400)
         ldy     #>RAMSTART2
-.ifdef CONFIG_2
-        sta     TXTTAB
+        sta     TXTTAB                  ; program text starts at RAMSTART2
         sty     TXTTAB+1
-.endif
-        sta     LINNUM
+        sta     LINNUM                  ; LINNUM is the address being tested
         sty     LINNUM+1
-.ifdef CBM2
-		tay
-.else
         ldy     #$00
-.endif
+; Find the top of RAM: walk up one byte at a time. A byte is RAM if $55 and then
+; $AA can be written to it and read back. The first byte that fails is the end.
+; NOTE: there is no upper limit, so this keeps going into the I/O area ($7F00)
+; and writes there if the read back happens to work. The BIOS POST stops at
+; $7F00 and stores the result in RAM_SIZE.
 L40D7:
         inc     LINNUM
         bne     L40DD
         inc     LINNUM+1
-.ifdef CBM1
-; CBM: hard RAM top limit is $8000
-        lda     LINNUM+1
-        cmp     #$80
-        beq     L40FA
-.endif
-.ifdef CBM2
-; optimized version of the CBM1 code
-        bmi     L40FA
-.endif
-.if .def(AIM65)
-; AIM65: hard RAM top limit is $A000
-        lda     LINNUM+1
-        cmp     #$A0
-        beq     L40FA
-.endif
 L40DD:
-.ifdef CONFIG_2
         lda     #$55 ; 01010101 / 10101010
-.else
-        lda     #$92 ; 10010010 / 00100100
-.endif
         sta     (LINNUM),y
         cmp     (LINNUM),y
-        bne     L40FA
-        asl     a
+        bne     L40FA                   ; read back failed, not RAM
+        asl     a                       ; $55 -> $AA
         sta     (LINNUM),y
         cmp     (LINNUM),y
-.ifdef CONFIG_CBM_ALL
-        beq     L40D7
-.else
-  .ifndef CONFIG_11
-        beq     L40D7; old: faster
-        bne     L40FA
-  .else
-        bne     L40FA; new: slower
-        beq     L40D7
-  .endif
+        bne     L40FA; new: slower      ; read back failed, not RAM
+        beq     L40D7                   ; byte is RAM, test the next one
+; The user typed a memory size: parse the number into LINNUM
 L40EE:
         jsr     CHRGOT
         jsr     LINGET
         tay
-        beq     L40FA
-        jmp     SYNERR
-.endif
+        beq     L40FA                   ; end of line, OK
+        jmp     SYNERR                  ; extra characters after the number
+; LINNUM = first address that is not usable, store as the end of memory
 L40FA:
         lda     LINNUM
         ldy     LINNUM+1
-        sta     MEMSIZ
+        sta     MEMSIZ                  ; top of memory
         sty     MEMSIZ+1
-.if !(.def(MICROTAN) || .def(AIM65) || .def(SYM1))
-        sta     FRETOP
+        sta     FRETOP                  ; string space grows down from here
         sty     FRETOP+1
-.endif
+
+; ----------------------------------------------------------------------------
+; Step 5: "TERMINAL WIDTH" prompt
+;   Enter  = keep the defaults
+;   number = must be 16 to 255, otherwise it asks again
+; The width goes to Z17 and the last print zone to Z18. With CONFIG_NO_CR on
+; nothing reads them (see ZEROPAGE_MAP.md).
+; ----------------------------------------------------------------------------
 L4106:
-.ifndef CONFIG_CBM_ALL
-  .ifdef APPLE
-        lda     #$FF
-        jmp     L2829
-        .word	STROUT ; PATCH!
-        jsr     NXIN
-  .else
         lda     #<QT_TERMINAL_WIDTH
         ldy     #>QT_TERMINAL_WIDTH
         jsr     STROUT
         jsr     NXIN
-  .endif
         stx     TXTPTR
         sty     TXTPTR+1
         jsr     CHRGET
         tay
-        beq     L4136
+        beq     L4136                   ; Enter, keep the defaults
         jsr     LINGET
         lda     LINNUM+1
-        bne     L4106
+        bne     L4106                   ; more than 255, ask again
         lda     LINNUM
         cmp     #$10
-        bcc     L4106
+        bcc     L4106                   ; less than 16, ask again
 L2829:
-        sta     Z17
-L4129:
-  .ifdef AIM65
-        sbc     #$0A
-  .else
+        sta     Z17                     ; terminal width
+L4129:                                  ; subtract 14 until it goes below 0
         sbc     #$0E
-  .endif
         bcs     L4129
         eor     #$FF
-  .ifdef AIM65
-        sbc     #$08
-  .else
         sbc     #$0C
-  .endif
         clc
         adc     Z17
-        sta     Z18
-.endif
+        sta     Z18                     ; last print zone
+; ----------------------------------------------------------------------------
+; Step 6: set up the program area
+; ----------------------------------------------------------------------------
 L4136:
-.ifdef CONFIG_RAM
-        lda     #<QT_WANT
-        ldy     #>QT_WANT
-        jsr     STROUT
-        jsr     NXIN
-        stx     TXTPTR
-        sty     TXTPTR+1
-        jsr     CHRGET
-        ldx     #<RAMSTART1
-        ldy     #>RAMSTART1
-        cmp     #'Y'
-        beq     L4183
-        cmp     #'A'
-        beq     L4157
-        cmp     #'N'
-        bne     L4136
-L4157:
-        ldx     #<IQERR
-        ldy     #>IQERR
-        stx     UNFNC_ATN
-        sty     UNFNC_ATN+1
-        ldx     #<ATN	; overwrite starting
-        ldy     #>ATN	; with ATN
-        cmp     #'A'
-        beq     L4183
-        ldx     #<IQERR
-        ldy     #>IQERR
-        stx     UNFNC_COS
-        sty     UNFNC_COS+1
-        stx     UNFNC_TAN
-        sty     UNFNC_TAN+1
-        stx     UNFNC_SIN
-        sty     UNFNC_SIN+1
-        ldx     #<SIN_COS_TAN_ATN	; overwrite
-        ldy     #>SIN_COS_TAN_ATN	; all of trig.s
-L4183:
-.else
         ldx     #<RAMSTART2
         ldy     #>RAMSTART2
-.endif
-        stx     TXTTAB
+        stx     TXTTAB                  ; start of program text
         sty     TXTTAB+1
         ldy     #$00
         tya
-        sta     (TXTTAB),y
-        inc     TXTTAB
-.ifndef CBM2
+        sta     (TXTTAB),y              ; a 0 byte before the first program line
+        inc     TXTTAB                  ; the program starts one byte after it
         bne     L4192
         inc     TXTTAB+1
 L4192:
-.endif
-.if CONFIG_SCRTCH_ORDER = 1
-        jsr     SCRTCH
-.endif
         lda     TXTTAB
         ldy     TXTTAB+1
-        jsr     REASON
-.ifdef CBM2
-        lda     #<QT_BASIC
-        ldy     #>QT_BASIC
-        jsr     STROUT
-.else
+        jsr     REASON                  ; check there is memory (OUT OF MEMORY if not)
+
+; ----------------------------------------------------------------------------
+; Step 7: banner and free memory
+; ----------------------------------------------------------------------------
         jsr     CRDO
-.endif
         lda     MEMSIZ
         sec
         sbc     TXTTAB
-        tax
+        tax                             ; bytes free = MEMSIZ - TXTTAB
         lda     MEMSIZ+1
         sbc     TXTTAB+1
-        jsr     LINPRT
-        lda     #<QT_BYTES_FREE
-        ldy     #>QT_BYTES_FREE
-        jsr     STROUT
-.if CONFIG_SCRTCH_ORDER = 2
-        jsr     SCRTCH
-.endif
-.ifdef CONFIG_CBM_ALL
-        jmp     RESTART
-.elseif .def(AIM65)
-        lda     #<CRDO
-        ldy     #>CRDO
-        sta     GORESTART+1
-        sty     GORESTART+2
-        jmp     RESTART
-.else
+        jsr     LINPRT                  ; print the number in A (high) and X (low)
+        lda     #<QT_BYTES_FREE         ; prints " BYTES FREE" and, because that
+        ldy     #>QT_BYTES_FREE         ; string has no 0 at the end, the copyright
+        jsr     STROUT                  ; line that follows it
+        jsr     SCRTCH                  ; NEW, empty program
+
+; ----------------------------------------------------------------------------
+; Step 8: final vectors and start the interpreter
+; ----------------------------------------------------------------------------
         lda     #<STROUT
         ldy     #>STROUT
-        sta     GOSTROUT+1
+        sta     GOSTROUT+1              ; GOSTROUT now jumps to STROUT
         sty     GOSTROUT+2
-  .if CONFIG_SCRTCH_ORDER = 3
-         jsr     SCRTCH
-  .endif
         lda     #<RESTART
         ldy     #>RESTART
-        sta     GORESTART+1
+        sta     GORESTART+1             ; GORESTART now jumps to RESTART (the OK prompt)
         sty     GORESTART+2
-        jmp     (GORESTART+1)
-.endif
+        jmp     (GORESTART+1)           ; go to RESTART
 
-  .if .def(CONFIG_RAM) || .def(OSI)
-; OSI is compiled for ROM, but includes
-; this unused string
-QT_WANT:
-        .byte   "WANT SIN-COS-TAN-ATN"
-        .byte   0
-  .endif
+
+; ============================================================================
+; Messages
+; ============================================================================
+
+; Credits, shown when "A" is typed at the MEMORY SIZE prompt
 QT_WRITTEN_BY:
-  .ifndef CONFIG_CBM_ALL
-  .if !(.def(AIM65) || .def(SYM1))
-    .ifdef APPLE
-		asc80 "COPYRIGHT 1977 BY MICROSOFT CO"
-		.byte	CR,0
-    .else
-        .byte   CR,LF,$0C ; FORM FEED
-      .ifndef CONFIG_11
-        .byte   "WRITTEN BY RICHARD W. WEILAND."
-      .else
-        .byte   "WRITTEN BY WEILAND & GATES"
-      .endif
-        .byte   CR,LF,0
-    .endif
-   .endif
+      ; asc80 "COPYRIGHT 1977 BY MICROSOFT CO"  ; only inAppleSoft Version
+      ; .byte CR,0                              ; only inAppleSoft Version
+      .byte   CR,LF,$0C                         ; FORM FEED
+      ; .byte "WRITTEN BY RICHARD W. WEILAND."  ; Used for version < 1.1
+      .byte   "WRITTEN BY WEILAND & GATES"
+      .byte   CR,LF,0
+
 QT_MEMORY_SIZE:
-        .byte   "MEMORY SIZE"
-        .byte   0
+      .byte   "MEMORY SIZE"
+      .byte   0
+
 QT_TERMINAL_WIDTH:
-    .if !(.def(AIM65) || .def(SYM1))
-        .byte   "TERMINAL "
-    .endif
-        .byte   "WIDTH"
-        .byte   0
-  .endif
+      .byte   "TERMINAL "
+      .byte   "WIDTH"
+      .byte   0
+
+; NOTE: this string has no 0 at the end, it runs into the copyright line below.
 QT_BYTES_FREE:
-        .byte   " BYTES FREE"
-  .ifdef CBM1
-  .elseif .def(CBM2)
-        .byte   CR,0
-  .elseif .def(APPLE)
-        .byte   0
-  .else
-        .byte   CR,LF,CR,LF
-  .endif
+      .byte   " BYTES FREE"
+      .byte   CR,LF,CR,LF           ; Need to take one of the CR/LF out
+
+; Copyright line, printed as the end of QT_BYTES_FREE. The label itself is not
+; used (it was only used by the CBM2 banner).
 QT_BASIC:
-  .ifdef OSI
-        .byte   "OSI 6502 BASIC VERSION 1.0 REV 3.2"
-  .endif
-  .ifdef KIM
-        .byte   "MOS TECH 6502 BASIC V1.1"
-  .endif
-  .ifdef MICROTAN
-        .byte   "MICROTAN BASIC"
-  .endif
-  .ifdef AIM65
-        .byte   "  AIM 65 BASIC V1.1"
-  .endif
-  .ifdef SYM1
-        .byte   "BASIC V1.1"
-  .endif
-  .ifdef CBM1
-        .byte   $13 ; HOME
-        .byte   "*** COMMODORE BASIC ***"
-        .byte   $11,$11,$11,0 ; DOWN/DOWN/DOWN
-  .endif
-  .ifdef CBM2
-        .byte   "### COMMODORE BASIC ###"
-        .byte   CR,CR,0
-  .endif
-  .ifdef APPLE
-        .byte   LF,CR,LF
-		.byte	"APPLE BASIC V1.1"
-  .endif
-  .ifndef CONFIG_CBM_ALL
-        .byte   CR,LF
-    .ifdef MICROTAN
-        .byte   "(C) 1980 MICROSOFT"
-    .elseif .def(AIM65)
-        .byte   0
-        .byte   "(C) 1978 MICROSOFT"
-    .elseif .def(SYM1)
-        .byte   "COPYRIGHT 1978 SYNERTEK SYSTEMS CORP."
-    .else
-        .byte   "COPYRIGHT 1977 BY MICROSOFT CO."
-    .endif
-        .byte   CR,LF
-      .ifndef AIM65
-        .byte   0
-      .endif
-  .endif
-.endif
+; Leaving here all the banners for reference
+; in the original source these are controlled by Config symbols
+;
+;  .byte   "OSI 6502 BASIC VERSION 1.0 REV 3.2" ; Ohio Scientific (OSI)
+;  .byte   "MOS TECH 6502 BASIC V1.1"           ; KIM-1
+;  .byte   "MICROTAN BASIC"                     ; Tangerine MICROTAN 65
+;  .byte   "  AIM 65 BASIC V1.1"                ; Rockwell International AIM-65 SBC
+;  .byte   "BASIC V1.1"                         ; Synertek SYM-1 SBC 
+;  .byte   "*** COMMODORE BASIC ***"            ; CBM v1.0 1977 Commodore PET
+;  .byte   "### COMMODORE BASIC ###"            ; CBM v2.0 1978 Commodore PET 2001
+;  .byte	"APPLE BASIC V1.1"                  ; AppleSoft Basic 
+;
+; Copywrite line for all, except Commodore which had no (C) mention
+; .byte   "(C) 1980 MICROSOFT"                        ; Microtan
+; .byte   "(C) 1978 MICROSOFT"                        ; AIM 65
+; .byte   "COPYRIGHT 1978 SYNERTEK SYSTEMS CORP."     ; Synertek SYM-1
+; .byte   "COPYRIGHT 1977 BY MICROSOFT CO."           ; all others
+      .byte   CR,LF
+      .byte   "COPYRIGHT 1977 BY MICROSOFT CO."
+      .byte   CR,LF
+      .byte   0

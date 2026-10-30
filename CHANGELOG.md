@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `init.s` commented: the cold start steps and the main labels are documented.
 - Easter egg (`WAIT 6502,n`) in `float.s` now sends "MICROSOFT!" to the serial
   terminal instead of writing to PET screen memory at $8000 (the BIOS ROM here).
   The original code is kept as comments. Tested on the emulator. Reference
@@ -30,7 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Zero page: `POSX` and `TXPSV` overrides removed. `POSX` is now at $5B and no
   longer overlaps `STRNG2`; `TXPSV` shares `LINNUM`. Override `.ifdef`s removed
   from `zeropage.s`. Added `ZEROPAGE_MAP.md`. Reference rebuilt.
-- `token.s`, `error.s`, `message.s`, `program.s`, `flow1.s`, `flow2.s`, `misc1.s`, `misc2.s`, `poke.s`, `rnd.s`, `array.s`, `trig.s`, `var.s`, `float.s`, `string.s` and `eval.s`: removed `.ifdef`s for other targets. `CONFIG_NULL` is
+- `token.s`, `error.s`, `message.s`, `program.s`, `flow1.s`, `flow2.s`, `misc1.s`, `misc2.s`, `poke.s`, `rnd.s`, `array.s`, `trig.s`, `var.s`, `float.s`, `string.s`, `eval.s` and `init.s`: removed `.ifdef`s for other targets. `CONFIG_NULL` is
   kept on purpose. `ERR_BADDATA` is commented out (needs `CONFIG_FILE`).
 - LOAD/SAVE stubs moved from `simple6502_extra.s` to `loadsave.s`.
 - `simple6502_extra.s` merged into `extra.s`. `.ifdef KBD` removed from `chrget.s`.
