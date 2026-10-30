@@ -81,7 +81,7 @@ Status: `BASIC` = BASIC only, `BIOS` = BIOS only, `OVERLAP` = BASIC and BIOS sha
 | $A2 | 1 | CPRTYP |  | BASIC |  |
 | $A3-$A4 | 2 | FNCNAM / TEMP3 |  | BASIC |  |
 | $A5-$A7 | 3 | DSCPTR |  | BASIC |  |
-| $A8-$A9 | 2 | DSCLEN |  | BASIC | JMPADRS = DSCLEN+1 (KBD only, unused) |
+| $A8-$A9 | 2 | DSCLEN |  | BASIC | JMPADRS = DSCLEN+1 ($A9-$AB): a 3 byte `JMP` used to call the functions (`eval.s` stores the address in JMPADRS+1/+2). Overlaps Z52 and ARGEXTENSION on purpose |
 | $AA | 1 | Z52 |  | BASIC | scratch for garbage collection and LEFT$/RIGHT$/MID$ |
 | $AB | 1 | ARGEXTENSION |  | BASIC |  |
 | $AC | 1 | TEMP1 |  | BASIC |  |

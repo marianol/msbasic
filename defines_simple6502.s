@@ -18,6 +18,10 @@ CONFIG_EASTER_EGG := 1              ; include the CBM2 “WAIT 6502″ easter eg
 CONFIG_NO_CR := 1                   ; no automatic line wrap in PRINT/TAB/comma zones (terminal wraps itself)
 CONFIG_NO_LINE_EDITING := 1         ; disable support for Microsoft-style “@”, “_”, BEL etc.
 CONFIG_NO_READ_Y_IS_ZERO_HACK := 1  ; don’t do a very volatile trick that saves one byte
+; NULL statement (not enabled). To use it, uncomment both lines. Other platforms used
+; NULL_MAX = $0A (OSI, CBM1) or $F0-$F2 (AIM65, KIM, MICROTAN, SYM1).
+; CONFIG_NULL := 1
+; NULL_MAX := $0A
 CONFIG_PEEK_SAVE_LINNUM := 1        ; preserve LINNUM on a PEEK
 CONFIG_SCRTCH_ORDER := 2            ; ?? where in the init code to call SCRTCH
 

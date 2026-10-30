@@ -4,8 +4,9 @@
 - [x] Figure out what each source in SOURCE_FILES.md does.
 - [x] Create a reference binary and a script that can compile and check against it as I am cleaning up in the source
 - [ ] see opportunities for file consolidation
-- [ ] clean up souces for .ifdef(s) that refer to other architectures.
-  - [x] done: all files except print.s, input.s and inline.s
+- [ ] the `CONFIG_*` flags (and `SIMPLE6502`) in the defines are not read by any source now, the code was resolved. Remove them or keep them as documentation. Only `CONFIG_NULL` is still used. The `-D simple6502` in the build scripts is not needed either
+- [x] clean up souces for .ifdef(s) that refer to other architectures.
+  - Only the `CONFIG_NULL` / `CONFIG_PRINTNULLS` conditionals are left on purpose (token.s, flow1.s, print.s, init.s). To enable NULL uncomment `CONFIG_NULL` and `NULL_MAX` in the defines.
 - [ ] update init.s once the cleanup is done:
   - [ ] use the BIOS RAM size (`RAM_SIZE` at $E3/$E4) for `MEMSIZ` and `FRETOP`, remove the RAM scan (L40D7 loop). The scan has no upper limit and can write into the I/O area at $7F00
   - [ ] remove the `MEMORY SIZE?` and `TERMINAL WIDTH?` prompts

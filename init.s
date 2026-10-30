@@ -44,7 +44,7 @@ COLD_START:
         lda     #$4C                    ; $4C = JMP opcode
         sta     GORESTART
         sta     GOSTROUT
-        sta     JMPADRS                 ; JMPADRS is only used by KBD, harmless here
+        sta     JMPADRS                 ; JMP opcode of the function call trampoline (eval.s)
         sta     USR
         lda     #<IQERR
         ldy     #>IQERR
@@ -91,6 +91,9 @@ L4098:                                  ; copy loop, X counts down to 0
         txa                             ; A = 0
         sta     SHIFTSIGNEXT
         sta     LASTPT+1
+.if .defined(CONFIG_NULL) || .defined(CONFIG_PRINTNULLS)
+        sta     Z15                     ; number of NULs after a CR = 0
+.endif
         pha                             ; push 0 as the bottom of the stack marker, the
                                         ; FOR/GOSUB frame search stops at it
         sta     Z14                     ; output is not suppressed
