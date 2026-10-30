@@ -17,12 +17,19 @@
   - [x] new startup banner (`QT_BASIC`, `QT_BYTES_FREE`, `QT_COPYWRITE`), each string is printed by its own call now. Tested in the emulator
   - [ ] `DSCLEN` is set to 3 twice in the cold start, remove one (changes the binary, rebuild the reference)
 - [x] zero page: `BASIC_ZP_START` lowered to $4A, BASIC ends at $DD. No overlap with the BIOS, $DE-$DF stay free as spare
-- [ ] `ENTROPY` in the defines is unused now. Use the timer for the `RND` seed or remove it
 - [x] `USR` has its own vector at $4A-$4C (it was an alias of `GORESTART`)
 - [x] TEST `USR` in the emulator, works:
   - `PRINT USR(0)` should give `?ILLEGAL QUANTITY ERROR`
   - load a routine ending in `RTS` (for example at $0300), then `POKE 75,0 : POKE 76,3 : X=USR(5)` should run it and return to the OK prompt
+- [x] TEST `SYS` in the emulator, works:
+  - `SYS 65536` and `SYS -1` should give `?ILLEGAL QUANTITY ERROR`
+  - load a routine ending in `RTS` should run it and return to the OK prompt
+  - check that `LIST` shows `SYS` and that the other keywords still work (the token numbers after `CLEAR` moved by one)
 - [ ] `LOAD` and `SAVE` are stubs (`loadsave.s`), hook them to the BIOS
+
+### Nice to have
+- [ ] `SYS` could load/store the A, X, Y and P registers like the C=64 does (from/to fixed locations)
+- [ ] `ENTROPY` in the defines is unused now. Use the timer for the `RND` seed or remove it. Now RND function gets its initial random seed from a hardcoded, fixed sequence of bytes stored in the ROM and passed to ZP in init.s
 
 ### From original source
 
