@@ -9,17 +9,17 @@
 - [x] clean up souces for .ifdef(s) that refer to other architectures.
   - Only the `CONFIG_NULL` / `CONFIG_PRINTNULLS` conditionals are left on purpose (token.s, flow1.s, print.s, init.s). To enable NULL uncomment `CONFIG_NULL` and `NULL_MAX` in the defines.
 - [ ] update init.s once the cleanup is done:
-  - [x] `MEMSIZ` is at $E3/$E4, the BIOS `RAM_SIZE`. BASIC reads the top of memory from it, the RAM scan and the `MEMORY SIZE?` prompt are gone. The BIOS needs no change. NOT TESTED
+  - [x] `MEMSIZ` is at $E3/$E4, the BIOS `RAM_SIZE`. BASIC reads the top of memory from it, the RAM scan and the `MEMORY SIZE?` prompt are gone. The BIOS needs no change. Tested in the emulator, the BYTES FREE is correct
   - [x] `TERMINAL WIDTH?` prompt removed, the code that wrote `Z17` and `Z18` is commented out
   - [x] freed the unused zero page slots (`Z17`, `Z18`, old `MEMSIZ`) and made the variables one contiguous block from `BASIC_ZP_START`
-  - [ ] `WIDTH` and `WIDTH2` in the defines are not used now, remove them when the commented width code is deleted
+  - [x] `WIDTH` and `WIDTH2` in the defines are not used now, see comments in defines_simple6502
   - [ ] the credits (`PR_WRITTEN_BY`, typing A at the memory prompt) are commented out, add them back somewhere if wanted
-  - [ ] new startup banner. `QT_BYTES_FREE` has no 0 at the end and runs into the copyright line (`QT_BASIC`), change both together
+  - [x] new startup banner (`QT_BASIC`, `QT_BYTES_FREE`, `QT_COPYWRITE`), each string is printed by its own call now. Tested in the emulator
   - [ ] `DSCLEN` is set to 3 twice in the cold start, remove one (changes the binary, rebuild the reference)
 - [x] zero page: `BASIC_ZP_START` lowered to $4A, BASIC ends at $DD. No overlap with the BIOS, $DE-$DF stay free as spare
 - [ ] `ENTROPY` in the defines is unused now. Use the timer for the `RND` seed or remove it
 - [x] `USR` has its own vector at $4A-$4C (it was an alias of `GORESTART`)
-- [ ] TEST `USR` in the emulator (not tested yet):
+- [x] TEST `USR` in the emulator, works:
   - `PRINT USR(0)` should give `?ILLEGAL QUANTITY ERROR`
   - load a routine ending in `RTS` (for example at $0300), then `POKE 75,0 : POKE 76,3 : X=USR(5)` should run it and return to the OK prompt
 - [ ] `LOAD` and `SAVE` are stubs (`loadsave.s`), hook them to the BIOS

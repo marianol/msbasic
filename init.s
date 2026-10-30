@@ -167,7 +167,12 @@ L4192:
 ; ----------------------------------------------------------------------------
 ; Step 7: banner and free memory
 ; ----------------------------------------------------------------------------
-        jsr     CRDO
+; CHANGED: the banner, the free memory and the copyright are printed one by one.
+; Before, QT_BYTES_FREE had no 0 at the end and ran into the copyright text.
+        lda     #<QT_BASIC
+        ldy     #>QT_BASIC
+        jsr     STROUT                  ; ### SIMPLE 6502 BASIC ###
+        jsr     CRDO                    ; blank line
         lda     MEMSIZ
         sec
         sbc     TXTTAB
@@ -175,9 +180,12 @@ L4192:
         lda     MEMSIZ+1
         sbc     TXTTAB+1
         jsr     LINPRT                  ; print the number in A (high) and X (low)
-        lda     #<QT_BYTES_FREE         ; prints " BYTES FREE" and, because that
-        ldy     #>QT_BYTES_FREE         ; string has no 0 at the end, the copyright
-        jsr     STROUT                  ; line that follows it
+        lda     #<QT_BYTES_FREE
+        ldy     #>QT_BYTES_FREE
+        jsr     STROUT                  ; " BYTES FREE " (same line as the copyright)
+        lda     #<QT_COPYWRITE
+        ldy     #>QT_COPYWRITE
+        jsr     STROUT                  ; (C) 1978 MICROSOFT
         jsr     SCRTCH                  ; NEW, empty program
 
 ; ----------------------------------------------------------------------------
@@ -213,13 +221,13 @@ L4192:
 ;      .byte   "WIDTH"
 ;      .byte   0
 
-; NOTE: this string has no 0 at the end, it runs into the copyright line below.
+; Printed after the number of bytes free. The trailing space separates it from the
+; copyright, which is on the same line.
 QT_BYTES_FREE:
-      .byte   " BYTES FREE"
-      .byte   CR,LF,CR,LF           ; Need to take one of the CR/LF out
+      .byte   " BYTES FREE "
+      .byte   0
 
-; Copyright line, printed as the end of QT_BYTES_FREE. The label itself is not
-; used (it was only used by the CBM2 banner).
+; Startup banner
 QT_BASIC:
 ; Leaving here all the banners for reference
 ; in the original source these are controlled by Config symbols
@@ -239,6 +247,12 @@ QT_BASIC:
 ; .byte   "COPYRIGHT 1978 SYNERTEK SYSTEMS CORP."     ; Synertek SYM-1
 ; .byte   "COPYRIGHT 1977 BY MICROSOFT CO."           ; all others
       .byte   CR,LF
-      .byte   "COPYRIGHT 1977 BY MICROSOFT CO."
+      .byte   "### SIMPLE 6502 BASIC ###" 
+      .byte   CR,LF
+      .byte   0
+
+; Copyright, same line as BYTES FREE. The CR,LF leaves a blank line before OK.
+QT_COPYWRITE:
+      .byte   "(C) 1978 MICROSOFT"
       .byte   CR,LF
       .byte   0

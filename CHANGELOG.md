@@ -23,20 +23,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Startup banner: `### SIMPLE 6502 BASIC ###`, a blank line, then the free memory and
+  `(C) 1978 MICROSOFT` on one line. `QT_BYTES_FREE` no longer runs into the copyright text, each
+  string (`QT_BASIC`, `QT_BYTES_FREE`, `QT_COPYWRITE`) has its own 0 and its own call in `init.s`.
 - Zero page: `Z17`, `Z18` and the old `MEMSIZ` slot removed (nothing used them). The
   variables are now one contiguous block from `BASIC_ZP_START` ($4A), it replaces
   `ZP_START1`-`4` and `ZP_USR`. Everything after those slots moved down. BASIC now ends at
-  $DD, no overlap with the BIOS ($DE-$DF stay free). `ZEROPAGE_MAP.md` regenerated. NOT TESTED.
+  $DD, no overlap with the BIOS ($DE-$DF stay free). `ZEROPAGE_MAP.md` regenerated. Tested in the emulator.
 - Startup: the MEMORY SIZE and TERMINAL WIDTH prompts and the RAM scan are removed.
   `MEMSIZ` is at $E3/$E4 (`MEMSIZ` in the defines), the BIOS `RAM_SIZE`, so BASIC reads the top
-  of memory the BIOS POST found. No BIOS change needed. NOT TESTED. The code that wrote
+  of memory the BIOS POST found. No BIOS change needed. Tested in the emulator, BYTES FREE is correct. The code that wrote
   `Z17`/`Z18`, the width prompt and the credits are commented out in `init.s`.
 - Build scripts simplified (no `-D`, no loop). The output is now
   `out/Simple6502-BASIC.bin` (plus `.o` and `.lbl`).
 - `USR` has its own 3 byte vector at $4A-$4C (`USR`). It was an alias of
   `GORESTART`, so `USR(x)` ended up at the OK prompt. It now gives ILLEGAL
   QUANTITY until the routine address is POKEd into $4B/$4C (75/76).
-  NOT TESTED yet (see TODO.md). Reference rebuilt.
+  Tested in the emulator. Reference rebuilt.
 - Defines: the `CONFIG_` settings are commented out and grouped in one block, with
   a description of each, to document how the source was configured. Nothing
   reads them any more except `CONFIG_NULL`.

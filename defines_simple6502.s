@@ -58,8 +58,12 @@ INPUTBUFFERX = INPUTBUFFER & $FF00
 ; constants
 SPACE_FOR_GOSUB := $3E
 STACK_TOP		:= $FA
-WIDTH			:= 40       ; not used now: Z17 and Z18 were removed from zeropage.s, the code in
-WIDTH2			:= 30       ; init.s that stored these is commented out (CONFIG_NO_CR)
+
+; This was used by the TERMINAL WIDTH Prompt and had no effect with CONFIG_NO_CR defined 
+; not used now: Z17 and Z18 were removed from zeropage.s, the code in
+; init.s that stored these is commented out 
+;WIDTH			:= 40       ; ends up in Z17
+;WIDTH2			:= 30       ; ends up in Z18
 
 RAMSTART2		:= $0400        ; is fine for us also it gives room for the INPUTBUFFER
 
